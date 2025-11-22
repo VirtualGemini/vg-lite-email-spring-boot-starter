@@ -179,6 +179,7 @@ Response code: 200; Time: 87ms (87 ms); Content length: 0 bytes (0 B)
 we’re planning to add scheduled tasks, batch sending, email templates, message queue integration, and more…
 
 ## Conclusion & Thanks
+Core-ready, almost magic: While some features are still polishing and a few may have minor rough edges, the core email sending functionality is solid and fully usable — one line to send, async & retry ready, your emails just fly!
 
 Thank you for checking out **VG Lite Email Spring Boot Starter**! We hope it makes sending emails in your projects effortless and enjoyable.
 

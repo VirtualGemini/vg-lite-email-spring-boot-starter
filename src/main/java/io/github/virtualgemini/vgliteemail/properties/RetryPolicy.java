@@ -11,9 +11,9 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  */
-package io.github.virtualgemini.vgliteemail.config;
+package io.github.virtualgemini.vgliteemail.properties;
 
-import io.github.virtualgemini.vgliteemail.core.Channel;
+import io.github.virtualgemini.vgliteemail.api.IEmailChannel;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -46,7 +46,7 @@ public class RetryPolicy {
 
     /* ========== 核心方法 ========== */
     public boolean shouldRetry(int errorCode, int tried) {
-        return tried < maxRetries && Channel.DEFAULT_RETRYABLE.contains(errorCode);
+        return tried < maxRetries && IEmailChannel.DEFAULT_RETRYABLE.contains(errorCode);
     }
 
     public long nextDelay(int tried) {

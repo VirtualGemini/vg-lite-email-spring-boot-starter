@@ -14,10 +14,16 @@
 
 package io.github.virtualgemini.vgliteemail.autoconfigure;
 
-import io.github.virtualgemini.vgliteemail.config.EmailAsyncProperties;
-import io.github.virtualgemini.vgliteemail.config.LiteEmailProperties;
-import io.github.virtualgemini.vgliteemail.config.RetryPolicy;
-import io.github.virtualgemini.vgliteemail.core.*;
+import io.github.virtualgemini.vgliteemail.api.IEmailChannel;
+import io.github.virtualgemini.vgliteemail.channel.Protocol;
+import io.github.virtualgemini.vgliteemail.channel.impl.SmtpEmailChannel;
+import io.github.virtualgemini.vgliteemail.channel.meta.SmtpMeta;
+import io.github.virtualgemini.vgliteemail.core.EmailBuilder;
+import io.github.virtualgemini.vgliteemail.core.EmailChannel;
+import io.github.virtualgemini.vgliteemail.core.EmailSender;
+import io.github.virtualgemini.vgliteemail.properties.EmailAsyncProperties;
+import io.github.virtualgemini.vgliteemail.properties.LiteEmailProperties;
+import io.github.virtualgemini.vgliteemail.properties.RetryPolicy;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -25,11 +31,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Properties;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * 自动配置 / Auto-configuration
@@ -39,36 +43,56 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class LiteEmailAutoConfiguration {
 
     /* ========== 私有工具方法 ========== */
-    private JavaMailSender buildMailSender(LiteEmailProperties prop) {
-        JavaMailSenderImpl impl = new JavaMailSenderImpl();
-        ServerMeta meta = ServerMeta.of(prop.getSender(), prop.getHost(), prop.getPort(), prop.isSsl());
-        impl.setHost(meta.host());
-        impl.setPort(meta.port());
-        impl.setUsername(prop.getSender());   // 记住用户名 / remember username
-        impl.setPassword(prop.getPassword());
+    private JavaMailSender buildEmailClient(LiteEmailProperties prop) {
+        Protocol protocol = prop.getProtocol() != null ? Protocol.valueOf(prop.getProtocol()) : Protocol.SMTP;
 
-        Properties p = impl.getJavaMailProperties();
-        p.setProperty("mail.smtp.auth", "true");
-        p.setProperty("mail.smtp.ssl.enable", String.valueOf(meta.ssl()));
-        p.setProperty("mail.smtp.connectiontimeout", "5000");
-        p.setProperty("mail.smtp.timeout", "5000");
-        return impl;
+        switch (protocol) {
+            case SMTP:
+                JavaMailSenderImpl impl = new JavaMailSenderImpl();
+
+                SmtpMeta meta;
+                if (prop.getHost() != null && prop.getPort() != null) {
+                    meta = new SmtpMeta(prop.getHost(), prop.getPort(), prop.isSsl());
+                } else {
+                    meta = SmtpEmailChannel.guessMeta(prop.getSender());
+                }
+
+                impl.setHost(meta.host());
+                impl.setPort(meta.port());
+                impl.setUsername(prop.getSender());
+                impl.setPassword(prop.getPassword());
+
+                Properties p = impl.getJavaMailProperties();
+                p.setProperty("mail.smtp.auth", "true");
+                p.setProperty("mail.smtp.ssl.enable", String.valueOf(meta.ssl()));
+                p.setProperty("mail.smtp.connectiontimeout", "5000");
+                p.setProperty("mail.smtp.timeout", "5000");
+
+                return impl;
+//            case API:
+
+            default:
+                throw new IllegalArgumentException("Unsupported protocol: " + protocol);
+        }
     }
+
 
     /* ========== Spring Bean ========== */
     @Bean
     @ConditionalOnMissingBean
     @Primary
     public JavaMailSender javaMailSender(LiteEmailProperties prop) {
-        return buildMailSender(prop);
+        prop.validate(); // 校验必填字段
+        return buildEmailClient(prop);
     }
 
     @Bean
     @ConditionalOnMissingBean
     @Primary
-    public Channel smtpChannel(JavaMailSender sender, LiteEmailProperties prop) {
-        return new SmtpChannel(sender, prop.getSender());   // 传入用户名 / pass username
+    public EmailChannel emailChannel(LiteEmailProperties properties, JavaMailSender mailSender) {
+        return new EmailChannel(properties, mailSender);
     }
+
 
     @Bean
     @ConditionalOnMissingBean
@@ -76,32 +100,17 @@ public class LiteEmailAutoConfiguration {
         return new RetryPolicy();
     }
 
-
-    @Bean
-    @ConditionalOnMissingBean
-    @Primary
-    public Executor emailExecutor(EmailAsyncProperties props) {
-        ThreadPoolTaskExecutor exec = new ThreadPoolTaskExecutor();
-        exec.setCorePoolSize(props.getCorePoolSize());
-        exec.setMaxPoolSize(props.getMaxPoolSize());
-        exec.setQueueCapacity(props.getQueueCapacity());
-        exec.setThreadNamePrefix(props.getThreadNamePrefix());
-        exec.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        exec.initialize();
-        return exec;
-    }
-
     @Bean
     @ConditionalOnMissingBean// 自动配置方法参数去掉限定
     @Primary
-    public LiteEmailSender liteEmailSender(Channel channel, Executor executor, RetryPolicy retryPolicy) {
-        return new LiteEmailSender(channel, executor, retryPolicy);
+    public EmailSender liteEmailSender(IEmailChannel channel, Executor executor, RetryPolicy retryPolicy) {
+        return new EmailSender(channel, executor, retryPolicy);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public EmailBuilder emailBuilder(LiteEmailSender liteEmailSender) {
-        return new EmailBuilder(liteEmailSender);
+    public EmailBuilder emailBuilder(EmailSender emailSender) {
+        return new EmailBuilder(emailSender);
     }
 
 }

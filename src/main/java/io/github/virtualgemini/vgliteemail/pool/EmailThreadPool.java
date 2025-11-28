@@ -13,11 +13,14 @@
  */
 package io.github.virtualgemini.vgliteemail.pool;
 
-import io.github.virtualgemini.vgliteemail.config.EmailAsyncProperties;
+import io.github.virtualgemini.vgliteemail.properties.EmailAsyncProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
@@ -27,18 +30,40 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @createDate 2025/11/21 22:00
  */
 // 轻量线程池 / Lightweight thread pool
+@Configuration
+@EnableConfigurationProperties(EmailAsyncProperties.class)
 public class EmailThreadPool {
 
-    @Bean
+    @Bean(name = "VGEmailExecutor")
     public Executor emailExecutor(EmailAsyncProperties p) {
+        p.validate(); // 校验线程池配置
         ThreadPoolTaskExecutor exec = new ThreadPoolTaskExecutor();
         exec.setCorePoolSize(p.getCorePoolSize());
         exec.setMaxPoolSize(p.getMaxPoolSize());
         exec.setQueueCapacity(p.getQueueCapacity());
+        exec.setKeepAliveSeconds(p.getKeepAliveSeconds());
         exec.setThreadNamePrefix(p.getThreadNamePrefix());
-        exec.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+
+        // 1. 拒绝策略
+        exec.setRejectedExecutionHandler(toHandler(p.getRejectedPolicy()));
+
+        // 2. 优雅停机
+        exec.setWaitForTasksToCompleteOnShutdown(true);
+        exec.setAwaitTerminationSeconds(p.getAwaitTerminationSeconds()); // <-- 可配置
+
         exec.initialize();
         return exec;
+    }
+
+    private RejectedExecutionHandler toHandler(String policy) {
+        if (policy == null) return new ThreadPoolExecutor.CallerRunsPolicy();
+        switch (policy.toUpperCase()) {
+            case "CALLER_RUNS":    return new ThreadPoolExecutor.CallerRunsPolicy();
+            case "ABORT":          return new ThreadPoolExecutor.AbortPolicy();
+            case "DISCARD":        return new ThreadPoolExecutor.DiscardPolicy();
+            case "DISCARD_OLDEST": return new ThreadPoolExecutor.DiscardOldestPolicy();
+            default:               return new ThreadPoolExecutor.CallerRunsPolicy();
+        }
     }
 
 }

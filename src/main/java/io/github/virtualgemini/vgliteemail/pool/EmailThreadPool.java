@@ -14,6 +14,7 @@
 package io.github.virtualgemini.vgliteemail.pool;
 
 import io.github.virtualgemini.vgliteemail.properties.EmailAsyncProperties;
+import io.github.virtualgemini.vgliteemail.utils.LiteMailLog;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -50,6 +51,9 @@ public class EmailThreadPool {
         // 2. 优雅停机
         exec.setWaitForTasksToCompleteOnShutdown(true);
         exec.setAwaitTerminationSeconds(p.getAwaitTerminationSeconds()); // <-- 可配置
+
+        LiteMailLog.info("LiteEmail", "Initialized email executor with core={}, max={}, queue={}, policy={}",
+                p.getCorePoolSize(), p.getMaxPoolSize(), p.getQueueCapacity(), p.getRejectedPolicy());
 
         exec.initialize();
         return exec;

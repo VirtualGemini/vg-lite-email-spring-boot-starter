@@ -15,7 +15,7 @@ package io.github.virtualgemini.vgliteemail.core;
 
 import io.github.virtualgemini.vgliteemail.api.IEmailChannel;
 import io.github.virtualgemini.vgliteemail.api.impl.AbstractEmailSender;
-import io.github.virtualgemini.vgliteemail.properties.RetryPolicy;
+import io.github.virtualgemini.vgliteemail.properties.RetryPolicyProperties;
 
 import java.util.concurrent.Executor;
 
@@ -27,8 +27,8 @@ public class EmailSender extends AbstractEmailSender {
 
     public EmailSender(IEmailChannel channel,
                        Executor executor,
-                       RetryPolicy retryPolicy) {
-        super(channel, executor, retryPolicy);   // 传给父类
+                       RetryPolicyProperties retryPolicyProperties) {
+        super(channel, executor, retryPolicyProperties);   // 传给父类
     }
 
     @Override
@@ -43,7 +43,7 @@ public class EmailSender extends AbstractEmailSender {
 
     public static EmailSender create(IEmailChannel channel,
                                      Executor executor,
-                                     RetryPolicy retryPolicy) {
-        return new EmailSender(channel, executor, retryPolicy);
+                                     RetryPolicyProperties retryPolicyProperties) {
+        return new EmailSender(channel, executor, retryPolicyProperties);
     }
 }

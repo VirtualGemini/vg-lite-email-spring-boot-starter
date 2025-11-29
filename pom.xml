@@ -8,7 +8,7 @@
     <!-- Maven 坐标 -->
     <groupId>io.github.virtualgemini</groupId>
     <artifactId>vg-lite-email-spring-boot-starter</artifactId>
-    <version>0.1.18</version>
+    <version>0.1.44</version>
     <name>vg-lite-email-spring-boot-starter</name>
     <description>Lightweight enhanced email sender starter for Spring Boot.</description>
 

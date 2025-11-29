@@ -35,6 +35,11 @@ public class LiteEmailProperties {
     private Integer port;  // 可选
     private boolean ssl = true; // 默认 SSL
     private String protocol = "SMTP"; // 默认协议 SMTP
+    /** 建立连接超时（毫秒） */
+    private long connectionTimeout = 5000;
+
+    /** 读写超时（毫秒） */
+    private long timeout = 5000;
 
     public void validate() {
         if (sender == null || sender.isEmpty()) {
@@ -49,6 +54,11 @@ public class LiteEmailProperties {
     public LiteEmailProperties() { }
 
     /* ---------- getter / setter ---------- */
+    public long getConnectionTimeout() { return connectionTimeout; }
+    public void setConnectionTimeout(long connectionTimeout) { this.connectionTimeout = connectionTimeout; }
+
+    public long getTimeout() { return timeout; }
+    public void setTimeout(long timeout) { this.timeout = timeout; }
 
     public String getProtocol() {
         return protocol;

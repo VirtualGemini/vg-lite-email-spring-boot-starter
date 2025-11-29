@@ -28,7 +28,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 
 @ConfigurationProperties(prefix = "vg.lite-email.retries")
-public class RetryPolicy {
+public class RetryPolicyProperties {
 
     private int globalRetries = 1;
     private int maxRetries = 1;

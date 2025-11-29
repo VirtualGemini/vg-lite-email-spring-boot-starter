@@ -25,7 +25,8 @@ import io.github.virtualgemini.vgliteemail.api.IEmailSender;
 import io.github.virtualgemini.vgliteemail.core.SendRequest;
 import io.github.virtualgemini.vgliteemail.core.SendResponse;
 import io.github.virtualgemini.vgliteemail.properties.LiteEmailProperties;
-import io.github.virtualgemini.vgliteemail.properties.RetryPolicy;
+import io.github.virtualgemini.vgliteemail.properties.RetryPolicyProperties;
+import io.github.virtualgemini.vgliteemail.utils.LiteMailLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,14 +42,14 @@ public abstract class AbstractEmailSender implements IEmailSender {
 
     protected final IEmailChannel channel;   // 供子类直接用
     private final Executor executor;
-    private final RetryPolicy retryPolicy;
+    private final RetryPolicyProperties retryPolicyProperties;
     private volatile int retryTimes = 1;
     protected AbstractEmailSender(IEmailChannel channel,
                                   Executor executor,
-                                  RetryPolicy retryPolicy) {
+                                  RetryPolicyProperties retryPolicyProperties) {
         this.channel = channel;
         this.executor = executor;
-        this.retryPolicy = retryPolicy;
+        this.retryPolicyProperties = retryPolicyProperties;
     }
 
     private LiteEmailProperties properties;
@@ -62,19 +63,28 @@ public abstract class AbstractEmailSender implements IEmailSender {
     /* ---------- 模板方法：重试逻辑 ---------- */
     @Override
     public SendResponse send(SendRequest req) {
+        // 开始发送邮件
+        LiteMailLog.info(channel.name(), "Start sending email to {}", String.join(",", req.getTo()));
+
         // 1. 判断开发者是否显式调用 retry(x)
         boolean developerSpecified = retryTimes > 1;
+
         // 2. 获取有效重试次数（开发者优先，其次全局默认）
         int effectiveRetries = developerSpecified
                 ? retryTimes
-                : retryPolicy.getGlobalRetries();
+                : retryPolicyProperties.getGlobalRetries();
+
         // 3. 最终重试次数受 maxRetries 限制
-        int maxRetries = retryPolicy.getMaxRetries();
+        int maxRetries = retryPolicyProperties.getMaxRetries();
         int finalRetries = Math.min(effectiveRetries, maxRetries);
+
         // 4. 如果配置导致 finalRetries < 1，则至少执行 1 次
         if (finalRetries < 1) {
+            LiteMailLog.warn(channel.name(),
+                    "Configured retries <= 0, forcing finalRetries to 1");
             finalRetries = 1;
         }
+        LiteMailLog.info(channel.name(), "Effective retries set to {}", finalRetries);
 
         int tried = 0;
         SendResponse resp;
@@ -82,33 +92,48 @@ public abstract class AbstractEmailSender implements IEmailSender {
         do {
             resp = tryOnce(req);
 
+            // 打印当前尝试次数和结果
+            LiteMailLog.info(channel.name(),
+                    "Attempt {}: success={}, errorCode={}",
+                    tried + 1, resp.isSuccess(), resp.getErrorCode());
+
             // 成功 → 立即退出
             if (resp.isSuccess()) {
+                LiteMailLog.info(channel.name(), "Email sent successfully on attempt {}", tried + 1);
                 break;
             }
+
             // 是否继续重试（包含：错误码是否可重试 + 次数限制）
-            if (!retryPolicy.shouldRetry(resp.getErrorCode(), tried)) {
+            if (!retryPolicyProperties.shouldRetry(resp.getErrorCode(), tried)) {
+                LiteMailLog.warn(channel.name(), "Email not retryable or max retries reached at attempt {}",
+                        tried + 1);
                 break;
             }
 
             tried++;
 
-            long delay = retryPolicy.nextDelay(tried);
+            long delay = retryPolicyProperties.nextDelay(tried);
+            LiteMailLog.info(channel.name(), "Retrying after {} ms (attempt {})", delay, tried + 1);
+
             try {
                 Thread.sleep(delay);
             } catch (InterruptedException e) {
+                LiteMailLog.error(channel.name(), "Retry interrupted on attempt {}", tried, e);
                 Thread.currentThread().interrupt();
                 break;
             }
 
         } while (true);
 
+        LiteMailLog.info(channel.name(), "Finished sending email, success={}", resp.isSuccess());
         return resp;
     }
 
 
+
     @Override
     public CompletableFuture<SendResponse> sendAsync(SendRequest req) {
+        LiteMailLog.info(channel.name(), "Submitting async email task to executor");
         return CompletableFuture.supplyAsync(() -> send(req), executor);
     }
 

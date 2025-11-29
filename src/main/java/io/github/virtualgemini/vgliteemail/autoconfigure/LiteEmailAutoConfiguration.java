@@ -15,15 +15,17 @@
 package io.github.virtualgemini.vgliteemail.autoconfigure;
 
 import io.github.virtualgemini.vgliteemail.api.IEmailChannel;
-import io.github.virtualgemini.vgliteemail.enums.Protocol;
 import io.github.virtualgemini.vgliteemail.channel.impl.SmtpEmailChannel;
 import io.github.virtualgemini.vgliteemail.channel.meta.SmtpMeta;
 import io.github.virtualgemini.vgliteemail.core.EmailBuilder;
 import io.github.virtualgemini.vgliteemail.core.EmailChannel;
 import io.github.virtualgemini.vgliteemail.core.EmailSender;
+import io.github.virtualgemini.vgliteemail.enums.Protocol;
 import io.github.virtualgemini.vgliteemail.properties.EmailAsyncProperties;
+import io.github.virtualgemini.vgliteemail.properties.LiteEmailLoggingProperties;
 import io.github.virtualgemini.vgliteemail.properties.LiteEmailProperties;
-import io.github.virtualgemini.vgliteemail.properties.RetryPolicy;
+import io.github.virtualgemini.vgliteemail.properties.RetryPolicyProperties;
+import io.github.virtualgemini.vgliteemail.utils.LiteMailLog;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -39,7 +41,13 @@ import java.util.concurrent.Executor;
  * 自动配置 / Auto-configuration
  */
 @AutoConfiguration
-@EnableConfigurationProperties({LiteEmailProperties.class, EmailAsyncProperties.class, RetryPolicy.class})
+@EnableConfigurationProperties(
+        {
+                LiteEmailProperties.class,
+                EmailAsyncProperties.class,
+                RetryPolicyProperties.class,
+                LiteEmailLoggingProperties.class
+        })
 public class LiteEmailAutoConfiguration {
 
     /* ========== 私有工具方法 ========== */
@@ -65,8 +73,8 @@ public class LiteEmailAutoConfiguration {
                 Properties p = impl.getJavaMailProperties();
                 p.setProperty("mail.smtp.auth", "true");
                 p.setProperty("mail.smtp.ssl.enable", String.valueOf(meta.ssl()));
-                p.setProperty("mail.smtp.connectiontimeout", "5000");
-                p.setProperty("mail.smtp.timeout", "5000");
+                p.setProperty("mail.smtp.connectiontimeout", String.valueOf(prop.getConnectionTimeout()));
+                p.setProperty("mail.smtp.timeout", String.valueOf(prop.getTimeout()));
 
                 return impl;
 //            case API:
@@ -78,6 +86,12 @@ public class LiteEmailAutoConfiguration {
 
 
     /* ========== Spring Bean ========== */
+    @Bean
+    public boolean initLogging(LiteEmailLoggingProperties loggingProperties) {
+        LiteMailLog.setEnabled(loggingProperties.isEnabled());
+        return true;
+    }
+
     @Bean
     @ConditionalOnMissingBean
     @Primary
@@ -95,20 +109,15 @@ public class LiteEmailAutoConfiguration {
 
 
     @Bean
-    @ConditionalOnMissingBean
-    public RetryPolicy retryPolicy() {
-        return new RetryPolicy();
-    }
-
-    @Bean
     @ConditionalOnMissingBean// 自动配置方法参数去掉限定
     @Primary
-    public EmailSender liteEmailSender(IEmailChannel channel, Executor executor, RetryPolicy retryPolicy) {
-        return new EmailSender(channel, executor, retryPolicy);
+    public EmailSender liteEmailSender(IEmailChannel channel, Executor executor, RetryPolicyProperties retryPolicyProperties) {
+        return new EmailSender(channel, executor, retryPolicyProperties);
     }
 
     @Bean
     @ConditionalOnMissingBean
+    @Primary
     public EmailBuilder emailBuilder(EmailSender emailSender) {
         return new EmailBuilder(emailSender);
     }

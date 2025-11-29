@@ -13,7 +13,7 @@ builder                                      // new EmailBuilder()
         .subject("Test")                     // set subject
         .text("Hello, World!")               // set content
         .async()                             // send asynchronously
-        .retry(3)                             // retry 3 if failed
+        .retry(3)                            // retry 3 if failed
         .send();                             // send email
 ```
 

@@ -60,23 +60,23 @@ You can download the jar file from the following link:
 #### linux shell:
 ```bash
 mvn install:install-file \
-  -Dfile=vg-lite-email-spring-boot-starter-0.1.13.jar \
+  -Dfile=vg-lite-email-spring-boot-starter-0.1.44.jar \
   -DgroupId=io.github.virtualgemini \
   -DartifactId=vg-lite-email-spring-boot-starter \
-  -Dversion=0.1.13 \
+  -Dversion=0.1.44 \
   -Dpackaging=jar
 ```
 #### windows cmd:
 ```bash
-mvn install:install-file -Dfile=vg-lite-email-spring-boot-starter-0.1.13.jar -DgroupId=io.github.virtualgemini -DartifactId=vg-lite-email-spring-boot-starter -Dversion=0.1.13 -Dpackaging=jar
+mvn install:install-file -Dfile=vg-lite-email-spring-boot-starter-0.1.44.jar -DgroupId=io.github.virtualgemini -DartifactId=vg-lite-email-spring-boot-starter -Dversion=0.1.44 -Dpackaging=jar
 ```
 #### windows powershell:
 ```bash
 mvn install:install-file `
-  -Dfile=vg-lite-email-spring-boot-starter-0.1.13.jar `
+  -Dfile=vg-lite-email-spring-boot-starter-0.1.44.jar `
   -DgroupId=io.github.virtualgemini `
   -DartifactId=vg-lite-email-spring-boot-starter `
-  -Dversion=0.1.13 `
+  -Dversion=0.1.44 `
   -Dpackaging=jar
 ```
 It should be noted that in the above command, the `-Dfile` parameter needs to be replaced with the path to the jar file you downloaded.
@@ -88,7 +88,7 @@ Add the following dependency to your `pom.xml`:
 <dependency>
     <groupId>io.github.virtualgemini</groupId>
     <artifactId>vg-lite-email-spring-boot-starter</artifactId>
-    <version>0.1.13</version>
+    <version>0.1.44</version>
 </dependency>
 <!-- Spring Boot Email -->
 <dependency>
@@ -103,7 +103,7 @@ Add the following dependency to your `application.yml`:
 vg:
   lite-email:
     sender: your-email@example.com       # your email address
-    password: your-email-password-key    # your email SMTP password
+    password: your_authorization_code    # your email SMTP password
 ```
 Please pay attention to the format and indentation in your `application.yml`; incorrect spacing may prevent proper loading of email settings.
 

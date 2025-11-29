@@ -55,7 +55,7 @@ Customizable Executors – Configure thread pools for async operations.
 Enjoy the **beta release** for now and start sending emails effortlessly!
 ### Download Jar
 You can download the jar file from the following link:
-- https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/releases/tag/v0.1.13
+- https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/releases/tag/v0.1.44
 ### Maven Install
 #### linux shell:
 ```bash

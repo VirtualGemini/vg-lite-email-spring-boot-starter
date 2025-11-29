@@ -30,6 +30,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "vg.lite-email.retries")
 public class RetryPolicy {
 
+    private int globalRetries = 1;
     private int maxRetries = 1;
 
     /**
@@ -38,7 +39,9 @@ public class RetryPolicy {
     private long initialDelay = 1000;
 
     /* ========== Getter & Setter ========== */
+    public int getGlobalRetries() { return globalRetries; }
     public int getMaxRetries() { return maxRetries; }
+    public void setGlobalRetries(int globalRetries) { this.globalRetries = globalRetries; }
     public void setMaxRetries(int maxRetries) { this.maxRetries = maxRetries; }
 
     public long getInitialDelay() { return initialDelay; }
@@ -46,7 +49,8 @@ public class RetryPolicy {
 
     /* ========== 核心方法 ========== */
     public boolean shouldRetry(int errorCode, int tried) {
-        return tried < maxRetries && IEmailChannel.DEFAULT_RETRYABLE.contains(errorCode);
+        return tried < maxRetries
+                && IEmailChannel.DEFAULT_RETRYABLE.contains(errorCode);
     }
 
     public long nextDelay(int tried) {

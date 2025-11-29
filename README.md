@@ -5,7 +5,7 @@ VG Lite Email is a lightweight, robust, and developer-friendly email solution bu
 ## Demo
 Just one line to send an email:
 ```java
-builder.to("email-username@example.com" ).subject("Test").text("Hello, World!").async().retry().send();
+builder.to("email-username@example.com" ).subject("Test").text("Hello, World!").async().retry(3).send();
 ```
 ```java
 builder                                      // new EmailBuilder()
@@ -13,7 +13,7 @@ builder                                      // new EmailBuilder()
         .subject("Test")                     // set subject
         .text("Hello, World!")               // set content
         .async()                             // send asynchronously
-        .retry()                             // retry if failed
+        .retry(3)                             // retry 3 if failed
         .send();                             // send email
 ```
 
@@ -43,7 +43,6 @@ Fluent API – Chainable for clean and readable email creation.EmailBuilder
 
 Customizable Executors – Configure thread pools for async operations.
 
-Interceptor Support – Hooks before and after sending emails for logging or monitoring.
 
 ## Quick Start
 ### Version & Compatibility

@@ -1,3 +1,16 @@
+/*
+ * Copyright 2025 Your VirtualGemini
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ */
 package io.github.virtualgemini.vgliteemail.api.impl;
 
 /**
@@ -49,15 +62,37 @@ public abstract class AbstractEmailSender implements IEmailSender {
     /* ---------- 模板方法：重试逻辑 ---------- */
     @Override
     public SendResponse send(SendRequest req) {
-        int max = Math.min(retryTimes, retryPolicy.getMaxRetries());
+        // 1. 判断开发者是否显式调用 retry(x)
+        boolean developerSpecified = retryTimes > 1;
+        // 2. 获取有效重试次数（开发者优先，其次全局默认）
+        int effectiveRetries = developerSpecified
+                ? retryTimes
+                : retryPolicy.getGlobalRetries();
+        // 3. 最终重试次数受 maxRetries 限制
+        int maxRetries = retryPolicy.getMaxRetries();
+        int finalRetries = Math.min(effectiveRetries, maxRetries);
+        // 4. 如果配置导致 finalRetries < 1，则至少执行 1 次
+        if (finalRetries < 1) {
+            finalRetries = 1;
+        }
+
         int tried = 0;
         SendResponse resp;
+
         do {
-            resp = tryOnce(req);          // 子类实现
-            if (resp.isSuccess() || !retryable(resp.getErrorCode())) {
+            resp = tryOnce(req);
+
+            // 成功 → 立即退出
+            if (resp.isSuccess()) {
                 break;
             }
+            // 是否继续重试（包含：错误码是否可重试 + 次数限制）
+            if (!retryPolicy.shouldRetry(resp.getErrorCode(), tried)) {
+                break;
+            }
+
             tried++;
+
             long delay = retryPolicy.nextDelay(tried);
             try {
                 Thread.sleep(delay);
@@ -65,10 +100,12 @@ public abstract class AbstractEmailSender implements IEmailSender {
                 Thread.currentThread().interrupt();
                 break;
             }
-            log.warn("第 {} 次重试，errorCode={}", tried + 1, resp.getErrorCode());
-        } while (tried < max);
+
+        } while (true);
+
         return resp;
     }
+
 
     @Override
     public CompletableFuture<SendResponse> sendAsync(SendRequest req) {

@@ -13,10 +13,9 @@
  */
 package io.github.virtualgemini.vgliteemail.properties;
 
+import io.github.virtualgemini.vgliteemail.enums.RejectedPolicyEnum;
 import io.github.virtualgemini.vgliteemail.exception.EmailConfigException;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import java.util.Arrays;
 
 /**
  * @author VirtualGemini
@@ -55,9 +54,9 @@ public class EmailAsyncProperties {
         if (awaitTerminationSeconds < 0) {
             throw new EmailConfigException("awaitTerminationSeconds must be >= 0");
         }
-        if (!Arrays.asList("CALLER_RUNS", "ABORT", "DISCARD", "DISCARD_OLDEST")
-                .contains(rejectedPolicy.toUpperCase())) {
-            throw new EmailConfigException("rejectedPolicy must be one of CALLER_RUNS, ABORT, DISCARD, DISCARD_OLDEST");
+        if (!RejectedPolicyEnum.isValid(rejectedPolicy)) {
+            throw new EmailConfigException("Invalid async.rejectedPolicy: " + rejectedPolicy
+                    + ". Allowed values: CALLER_RUNS, ABORT, DISCARD, DISCARD_OLDEST.");
         }
     }
 

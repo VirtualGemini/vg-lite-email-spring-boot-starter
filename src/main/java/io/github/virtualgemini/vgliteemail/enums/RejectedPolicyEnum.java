@@ -11,29 +11,27 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  */
-package io.github.virtualgemini.vgliteemail.channel.meta;
-
-import io.github.virtualgemini.vgliteemail.channel.IProtocolMeta;
+package io.github.virtualgemini.vgliteemail.enums;
 
 /**
  * @author VirtualGemini
  * @version 1.0
  * @description: TODO
- * @createDate 2025/11/28 22:09
+ * @createDate 2025/11/29 11:07
  */
-public class SmtpMeta implements IProtocolMeta {
-    private final String host;
-    private final int port;
-    private final boolean ssl;
+public enum RejectedPolicyEnum {
+    CALLER_RUNS,
+    ABORT,
+    DISCARD,
+    DISCARD_OLDEST;
 
-    public SmtpMeta(String host, int port, boolean ssl) {
-        this.host = host;
-        this.port = port;
-        this.ssl = ssl;
+    public static boolean isValid(String v) {
+        try {
+            RejectedPolicyEnum.valueOf(v.toUpperCase());
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
-
-    public String host() { return host; }
-    public int port() { return port; }
-    public boolean ssl() { return ssl; }
 }
 

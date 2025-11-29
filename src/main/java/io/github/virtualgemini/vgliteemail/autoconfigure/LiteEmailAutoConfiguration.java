@@ -15,7 +15,7 @@
 package io.github.virtualgemini.vgliteemail.autoconfigure;
 
 import io.github.virtualgemini.vgliteemail.api.IEmailChannel;
-import io.github.virtualgemini.vgliteemail.channel.Protocol;
+import io.github.virtualgemini.vgliteemail.enums.Protocol;
 import io.github.virtualgemini.vgliteemail.channel.impl.SmtpEmailChannel;
 import io.github.virtualgemini.vgliteemail.channel.meta.SmtpMeta;
 import io.github.virtualgemini.vgliteemail.core.EmailBuilder;

@@ -62,7 +62,7 @@ public final class LiteMailLogUtil {
 
     private static String getVersion() {
         String v = LiteMailLogUtil.class.getPackage().getImplementationVersion();
-        return v == null ? "0.1.44" : v;
+        return v == null ? "0.1.64" : v;
     }
 
     private LiteMailLogUtil() {}

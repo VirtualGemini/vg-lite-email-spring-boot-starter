@@ -55,28 +55,28 @@ Customizable Executors – Configure thread pools for async operations.
 Enjoy the **beta release** for now and start sending emails effortlessly!
 ### Download Jar
 You can download the jar file from the following link:
-- https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/releases/tag/v0.1.44
+- https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/releases/tag/v0.1.63
 ### Maven Install
 #### linux shell:
 ```bash
 mvn install:install-file \
-  -Dfile=vg-lite-email-spring-boot-starter-0.1.44.jar \
+  -Dfile=vg-lite-email-spring-boot-starter-0.1.63.jar \
   -DgroupId=io.github.virtualgemini \
   -DartifactId=vg-lite-email-spring-boot-starter \
-  -Dversion=0.1.44 \
+  -Dversion=0.1.63 \
   -Dpackaging=jar
 ```
 #### windows cmd:
 ```bash
-mvn install:install-file -Dfile=vg-lite-email-spring-boot-starter-0.1.44.jar -DgroupId=io.github.virtualgemini -DartifactId=vg-lite-email-spring-boot-starter -Dversion=0.1.44 -Dpackaging=jar
+mvn install:install-file -Dfile=vg-lite-email-spring-boot-starter-0.1.63.jar -DgroupId=io.github.virtualgemini -DartifactId=vg-lite-email-spring-boot-starter -Dversion=0.1.63 -Dpackaging=jar
 ```
 #### windows powershell:
 ```bash
 mvn install:install-file `
-  -Dfile=vg-lite-email-spring-boot-starter-0.1.44.jar `
+  -Dfile=vg-lite-email-spring-boot-starter-0.1.63.jar `
   -DgroupId=io.github.virtualgemini `
   -DartifactId=vg-lite-email-spring-boot-starter `
-  -Dversion=0.1.44 `
+  -Dversion=0.1.63 `
   -Dpackaging=jar
 ```
 It should be noted that in the above command, the `-Dfile` parameter needs to be replaced with the path to the jar file you downloaded.
@@ -129,7 +129,7 @@ public class Controller {
                 .subject("Test")
                 .text("Hello, World!")
                 .async()
-                .retry()
+                .retry(3)
                 .send();
     }
 }

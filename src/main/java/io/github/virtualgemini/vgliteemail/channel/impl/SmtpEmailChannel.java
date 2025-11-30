@@ -17,7 +17,6 @@ import io.github.virtualgemini.vgliteemail.api.impl.AbstractEmailChannel;
 import io.github.virtualgemini.vgliteemail.channel.meta.SmtpMeta;
 import io.github.virtualgemini.vgliteemail.core.SendRequest;
 import io.github.virtualgemini.vgliteemail.core.SendResponse;
-import io.github.virtualgemini.vgliteemail.utils.LiteMailLog;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
@@ -44,10 +43,8 @@ public class SmtpEmailChannel extends AbstractEmailChannel {
             message.setSubject(request.getSubject());
             message.setText(request.getText());
             sender.send(message);
-            LiteMailLog.info(name(), "Email sent successfully to {}", request.getTo());
             return SendResponse.builder().success(true).build();
         } catch (Exception e) {
-            LiteMailLog.error(name(), "Failed to send email to {}", request.getTo(), e);
             return SendResponse.builder().success(false)
                     .error(e.getMessage())
                     .errorCode(-1)

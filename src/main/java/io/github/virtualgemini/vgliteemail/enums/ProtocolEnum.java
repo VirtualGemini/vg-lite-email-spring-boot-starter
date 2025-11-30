@@ -19,6 +19,6 @@ package io.github.virtualgemini.vgliteemail.enums;
  * @description: TODO
  * @createDate 2025/11/28 22:07
  */
-public enum Protocol {
+public enum ProtocolEnum {
     SMTP, API
 }

@@ -13,6 +13,7 @@
  */
 package io.github.virtualgemini.vgliteemail.properties;
 
+import io.github.virtualgemini.vgliteemail.enums.ProtocolEnum;
 import io.github.virtualgemini.vgliteemail.exception.EmailConfigException;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -34,7 +35,7 @@ public class LiteEmailProperties {
     private String host;   // 可选，留空则自动推断
     private Integer port;  // 可选
     private boolean ssl = true; // 默认 SSL
-    private String protocol = "SMTP"; // 默认协议 SMTP
+    private String protocol = String.valueOf(ProtocolEnum.SMTP); // 默认协议 SMTP
     /** 建立连接超时（毫秒） */
     private long connectionTimeout = 5000;
 

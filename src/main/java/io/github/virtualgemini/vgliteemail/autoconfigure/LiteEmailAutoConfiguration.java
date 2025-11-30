@@ -20,12 +20,12 @@ import io.github.virtualgemini.vgliteemail.channel.meta.SmtpMeta;
 import io.github.virtualgemini.vgliteemail.core.EmailBuilder;
 import io.github.virtualgemini.vgliteemail.core.EmailChannel;
 import io.github.virtualgemini.vgliteemail.core.EmailSender;
-import io.github.virtualgemini.vgliteemail.enums.Protocol;
+import io.github.virtualgemini.vgliteemail.enums.ProtocolEnum;
 import io.github.virtualgemini.vgliteemail.properties.EmailAsyncProperties;
 import io.github.virtualgemini.vgliteemail.properties.LiteEmailLoggingProperties;
 import io.github.virtualgemini.vgliteemail.properties.LiteEmailProperties;
 import io.github.virtualgemini.vgliteemail.properties.RetryPolicyProperties;
-import io.github.virtualgemini.vgliteemail.utils.LiteMailLog;
+import io.github.virtualgemini.vgliteemail.utils.LiteMailLogUtil;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -50,11 +50,18 @@ import java.util.concurrent.Executor;
         })
 public class LiteEmailAutoConfiguration {
 
+    private final LiteEmailLoggingProperties liteEmailLoggingProperties;
+
+    // 构造方法注入（Spring 会自动传入配置类实例）
+    public LiteEmailAutoConfiguration(LiteEmailLoggingProperties liteEmailLoggingProperties) {
+        this.liteEmailLoggingProperties = liteEmailLoggingProperties;
+    }
+
     /* ========== 私有工具方法 ========== */
     private JavaMailSender buildEmailClient(LiteEmailProperties prop) {
-        Protocol protocol = prop.getProtocol() != null ? Protocol.valueOf(prop.getProtocol()) : Protocol.SMTP;
-
-        switch (protocol) {
+        LiteMailLogUtil.setLoggingProperties(this.liteEmailLoggingProperties);
+        ProtocolEnum protocolEnum = prop.getProtocol() != null ? ProtocolEnum.valueOf(prop.getProtocol()) : ProtocolEnum.SMTP;
+        switch (protocolEnum) {
             case SMTP:
                 JavaMailSenderImpl impl = new JavaMailSenderImpl();
 
@@ -63,6 +70,9 @@ public class LiteEmailAutoConfiguration {
                     meta = new SmtpMeta(prop.getHost(), prop.getPort(), prop.isSsl());
                 } else {
                     meta = SmtpEmailChannel.guessMeta(prop.getSender());
+                    prop.setHost(meta.host());
+                    prop.setPort(meta.port());
+                    prop.setSsl(meta.ssl());
                 }
 
                 impl.setHost(meta.host());
@@ -80,7 +90,7 @@ public class LiteEmailAutoConfiguration {
 //            case API:
 
             default:
-                throw new IllegalArgumentException("Unsupported protocol: " + protocol);
+                throw new IllegalArgumentException("Unsupported protocol: " + protocolEnum);
         }
     }
 
@@ -88,7 +98,7 @@ public class LiteEmailAutoConfiguration {
     /* ========== Spring Bean ========== */
     @Bean
     public boolean initLogging(LiteEmailLoggingProperties loggingProperties) {
-        LiteMailLog.setEnabled(loggingProperties.isEnabled());
+        LiteMailLogUtil.setEnabled(loggingProperties.isEnabled());
         return true;
     }
 

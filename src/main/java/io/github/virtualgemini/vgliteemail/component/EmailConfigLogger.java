@@ -1,9 +1,11 @@
 package io.github.virtualgemini.vgliteemail.component;
 
+import io.github.virtualgemini.vgliteemail.channel.meta.SmtpMeta;
 import io.github.virtualgemini.vgliteemail.properties.EmailAsyncProperties;
+import io.github.virtualgemini.vgliteemail.properties.LiteEmailLoggingProperties;
 import io.github.virtualgemini.vgliteemail.properties.LiteEmailProperties;
 import io.github.virtualgemini.vgliteemail.properties.RetryPolicyProperties;
-import io.github.virtualgemini.vgliteemail.utils.LiteMailLog;
+import io.github.virtualgemini.vgliteemail.utils.LiteMailLogUtil;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.Ordered;
@@ -25,15 +27,18 @@ public class EmailConfigLogger implements ApplicationRunner {
     private final LiteEmailProperties liteProps;
     private final EmailAsyncProperties asyncProps;
     private final RetryPolicyProperties retryProps;
-
+    private final LiteEmailLoggingProperties loggingProps;
     private static final long START_TIME = System.currentTimeMillis();
+
+    private SmtpMeta smtpMeta;
 
     public EmailConfigLogger(LiteEmailProperties liteProps,
                              EmailAsyncProperties asyncProps,
-                             RetryPolicyProperties retryProps) {
+                             RetryPolicyProperties retryProps, LiteEmailLoggingProperties loggingProps) {
         this.liteProps = liteProps;
         this.asyncProps = asyncProps;
         this.retryProps = retryProps;
+        this.loggingProps = loggingProps;
     }
 
     /**
@@ -43,39 +48,48 @@ public class EmailConfigLogger implements ApplicationRunner {
         long uptime = System.currentTimeMillis() - START_TIME;
         return String.format("%.3f", uptime / 1000.0);
     }
+
+    /*private void setDefaultValue(String protocol) {
+        // SMTP
+        if (protocol.equals("SMTP")) {
+            smtpMeta = SmtpEmailChannel.guessMeta(liteProps.getSender());
+            liteProps.setHost(smtpMeta.host());
+            liteProps.setPort(smtpMeta.port());
+        }
+    }*/
     @Override
     public void run(ApplicationArguments args) {
-        LiteMailLog.printBanner();   // 先 banner
+        LiteMailLogUtil.printBanner();   // 先 banner
         long start = System.nanoTime();          // 开始计时
-        LiteMailLog.infoRaw("================ LiteEmailProperties =================");
-        LiteMailLog.infoRaw("sender: {}", liteProps.getSender());
-        LiteMailLog.infoRaw("password: {}", liteProps.getPassword() != null ? "*********" : null);
-        LiteMailLog.infoRaw("host: {}", liteProps.getHost());
-        LiteMailLog.infoRaw("port: {}", liteProps.getPort());
-        LiteMailLog.infoRaw("ssl: {}", liteProps.isSsl());
-        LiteMailLog.infoRaw("connectionTimeout: {} ms", liteProps.getConnectionTimeout());
-        LiteMailLog.infoRaw("timeout: {} ms", liteProps.getTimeout());
-        LiteMailLog.infoRaw("======================================================");
+//        setDefaultValue(liteProps.getProtocol());
+        LiteMailLogUtil.infoRaw("================ LiteEmailProperties =================");
+        LiteMailLogUtil.infoRaw("sender: {}", liteProps.getSender());
+        LiteMailLogUtil.infoRaw("password: {}", liteProps.getPassword() != null ? "*********" : null);
+        LiteMailLogUtil.infoRaw("protocol: {}", liteProps.getProtocol());
+        LiteMailLogUtil.infoRaw("host: {}", liteProps.getHost());
+        LiteMailLogUtil.infoRaw("port: {}", liteProps.getPort());
+        LiteMailLogUtil.infoRaw("ssl: {}", liteProps.isSsl());
+        LiteMailLogUtil.infoRaw("connectionTimeout: {} ms", liteProps.getConnectionTimeout());
+        LiteMailLogUtil.infoRaw("timeout: {} ms", liteProps.getTimeout());
 
-        LiteMailLog.infoRaw("================ RetryPolicyProperties ===============");
-        LiteMailLog.infoRaw("globalRetries: {}", retryProps.getGlobalRetries());
-        LiteMailLog.infoRaw("maxRetries: {}", retryProps.getMaxRetries());
-        LiteMailLog.infoRaw("initialDelay: {} ms", retryProps.getInitialDelay());
-        LiteMailLog.infoRaw("======================================================");
+        LiteMailLogUtil.infoRaw("================ RetryPolicyProperties ===============");
+        LiteMailLogUtil.infoRaw("globalRetries: {}", retryProps.getGlobalRetries());
+        LiteMailLogUtil.infoRaw("maxRetries: {}", retryProps.getMaxRetries());
+        LiteMailLogUtil.infoRaw("initialDelay: {} ms", retryProps.getInitialDelay());
 
-        LiteMailLog.infoRaw("================ EmailAsyncProperties ================");
-        LiteMailLog.infoRaw("corePoolSize: {}", asyncProps.getCorePoolSize());
-        LiteMailLog.infoRaw("maxPoolSize: {}", asyncProps.getMaxPoolSize());
-        LiteMailLog.infoRaw("queueCapacity: {}", asyncProps.getQueueCapacity());
-        LiteMailLog.infoRaw("keepAliveSeconds: {}", asyncProps.getKeepAliveSeconds());
-        LiteMailLog.infoRaw("rejectedPolicy: {}", asyncProps.getRejectedPolicy());
-        LiteMailLog.infoRaw("awaitTerminationSeconds: {}", asyncProps.getAwaitTerminationSeconds());
-        LiteMailLog.infoRaw("threadNamePrefix: {}", asyncProps.getThreadNamePrefix());
-        LiteMailLog.infoRaw("======================================================");
+        LiteMailLogUtil.infoRaw("================ EmailAsyncProperties ================");
+        LiteMailLogUtil.infoRaw("corePoolSize: {}", asyncProps.getCorePoolSize());
+        LiteMailLogUtil.infoRaw("maxPoolSize: {}", asyncProps.getMaxPoolSize());
+        LiteMailLogUtil.infoRaw("queueCapacity: {}", asyncProps.getQueueCapacity());
+        LiteMailLogUtil.infoRaw("keepAliveSeconds: {}", asyncProps.getKeepAliveSeconds());
+        LiteMailLogUtil.infoRaw("rejectedPolicy: {}", asyncProps.getRejectedPolicy());
+        LiteMailLogUtil.infoRaw("awaitTerminationSeconds: {}", asyncProps.getAwaitTerminationSeconds());
+        LiteMailLogUtil.infoRaw("threadNamePrefix: {}", asyncProps.getThreadNamePrefix());
+        LiteMailLogUtil.infoRaw("======================================================");
 
         /* ===== 收官耗时 ===== */
         long costMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-        LiteMailLog.infoRaw("LiteEmail Initialized in {} ms (JVM running for {} s)", costMs, jvmUptime());
+        LiteMailLogUtil.infoRaw("LiteEmail Initialized in {} ms (JVM running for {} s)", costMs, jvmUptime());
 
     }
 }

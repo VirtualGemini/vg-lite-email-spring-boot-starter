@@ -21,6 +21,7 @@ package io.github.virtualgemini.vgliteemail.properties;
  */
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.logging.LogLevel;
 
 @ConfigurationProperties(prefix = "vg.lite-email.logging")
 public class LiteEmailLoggingProperties {
@@ -29,12 +30,28 @@ public class LiteEmailLoggingProperties {
      */
     private boolean enabled = true;
 
+    /**
+     * 日志等级
+     */
+    private String level = String.valueOf(LogLevel.INFO);
+
+    public LiteEmailLoggingProperties() {
+    }
+
     public boolean isEnabled() {
         return enabled;
     }
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getLevel() {
+        return level;
+    }
+
+    public void setLevel(String level) {
+        this.level = level;
     }
 }
 

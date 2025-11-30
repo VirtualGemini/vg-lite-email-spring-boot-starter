@@ -63,7 +63,7 @@ mvn install:install-file \
   -Dfile=vg-lite-email-spring-boot-starter-0.1.64.jar \
   -DgroupId=io.github.virtualgemini \
   -DartifactId=vg-lite-email-spring-boot-starter \
-  -Dversion=0.1.63 \
+  -Dversion=0.1.64 \
   -Dpackaging=jar
 ```
 #### windows cmd:

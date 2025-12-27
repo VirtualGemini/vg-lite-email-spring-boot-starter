@@ -172,7 +172,7 @@ Response code: 200; Time: 87ms (87 ms); Content length: 0 bytes (0 B)
 ## 贡献
 我们真诚欢迎并感谢每一位贡献者的支持！无论您有新想法、功能建议还是代码优化，都可以通过以下方式参与：
 
-提交 Pull Request: 分享您的代码，助力项目成长。
+提交 Pull Request：分享您的代码，助力项目成长。
 
 创建 GitHub Issue：提出 bug 反馈或新功能建议，让我们一起完善。
 

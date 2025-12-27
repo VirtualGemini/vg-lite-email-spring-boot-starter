@@ -1,7 +1,4 @@
 <h2 align="center" id="top">VG Lite Email Spring Boot Starter</h2>
-
----
-
 <p>A lightweight, robust, and developer-friendly email solution built on Spring Boot. It provides an easy-to-use API for sending both synchronous and asynchronous emails with retry mechanisms, while integrating seamlessly into Spring Boot applications, your code reads like poetry.</p>
 <div align="center">English | <a href="./README.zh-CN.md">简体中文</a></div>
 
@@ -192,7 +189,5 @@ If you like the project, please give it a ⭐ on GitHub — your support keeps u
 
 Happy coding and smooth emailing! 
 
----
-
-<div align="center"><a href="#top">Back to Top</a></div>
+<div align="center"><a href="#top">#### Back to Top</a></div>
 <br>

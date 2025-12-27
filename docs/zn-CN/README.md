@@ -1,7 +1,7 @@
-#### Available in:
-- [English](docs/en/README.md)
-- [简体中文](docs/zh-CN/README.md)
-- [繁體中文](docs/zh-TW/README.md)
+#### languages:
+- [English](https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/blob/master/docs/en/README.md)
+- [简体中文](https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/blob/master/docs/zh-CN/README.md)
+- [繁體中文](https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/blob/master/docs/zh-TW/README.md)
 
 # VG Lite Email Spring Boot Starter
 

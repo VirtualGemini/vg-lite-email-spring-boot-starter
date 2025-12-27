@@ -1,3 +1,10 @@
+# Welcome to the Project
+
+Available in:
+- [English](README.md)
+- [简体中文](README_zh-CN.md)
+- [繁體中文](README_zh-TW.md)
+
 # VG Lite Email Spring Boot Starter
 
 VG Lite Email is a lightweight, robust, and developer-friendly email solution built on Spring Boot. It provides an easy-to-use API for sending both synchronous and asynchronous emails with retry mechanisms, while integrating seamlessly into Spring Boot applications, your code reads like poetry.

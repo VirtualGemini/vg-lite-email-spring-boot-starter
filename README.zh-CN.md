@@ -1,8 +1,4 @@
-
 <h2 align="center" id="top">VG Lite Email Spring Boot Starter</h2>
-
----
-
 <p>一个轻量级、强大且开发者友好的邮件解决方案，基于 Spring Boot 构建。它提供了一个易于使用的链式 API，用于发送同步和异步邮件，并支持重试机制，可以无缝集成到 Spring Boot 应用程序中，让你的代码如同诗歌。</p>
 <div align="center"><a href="./README.md">English</a> | 简体中文</div>
 
@@ -176,7 +172,7 @@ Response code: 200; Time: 87ms (87 ms); Content length: 0 bytes (0 B)
 ## 贡献
 我们真诚欢迎并感谢每一位贡献者的支持！无论您有新想法、功能建议还是代码优化，都可以通过以下方式参与：
 
-提交 Pull Request: 分享您的代码，助力项目成长。
+提交 Pull Request：分享您的代码，助力项目成长。
 
 创建 GitHub Issue：提出 bug 反馈或新功能建议，让我们一起完善。
 
@@ -198,7 +194,6 @@ Response code: 200; Time: 87ms (87 ms); Content length: 0 bytes (0 B)
 
 祝编程愉快，邮件发送顺利！
 
----
-
+<br>
 <div align="center"><a href="#top">回到顶部</a></div>
 <br>

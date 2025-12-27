@@ -1,9 +1,9 @@
 # Welcome to the Project
 
 Available in:
-- [English](README.md)
-- [简体中文](../zn-CN/README.md)
-- [繁體中文](../zn-TW/README.md)
+- [English](index.md)
+- [简体中文](../zn-CN/index.md)
+- [繁體中文](../zn-TW/index.md)
 
 # VG Lite Email Spring Boot Starter
 

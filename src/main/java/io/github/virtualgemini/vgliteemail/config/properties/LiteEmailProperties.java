@@ -11,11 +11,12 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  */
-package io.github.virtualgemini.vgliteemail.properties;
+package io.github.virtualgemini.vgliteemail.config.properties;
 
 import io.github.virtualgemini.vgliteemail.enums.ProtocolEnum;
 import io.github.virtualgemini.vgliteemail.exception.EmailConfigException;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 /**
  * @author VirtualGemini
@@ -28,6 +29,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * 配置属性 -- Configuration properties
  * 对应 yml lite.email.* 前缀
  */
+
+@Component
 @ConfigurationProperties(prefix = "vg.lite-email")
 public class LiteEmailProperties {
     private String sender;

@@ -11,31 +11,33 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  */
-package io.github.virtualgemini.vgliteemail.properties;
+package io.github.virtualgemini.vgliteemail.config.properties;
 
 import io.github.virtualgemini.vgliteemail.enums.RejectedPolicyEnum;
 import io.github.virtualgemini.vgliteemail.exception.EmailConfigException;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author VirtualGemini
  * @version 1.0
- * @description: TODO
+ * @description: Email async configuration properties
  * @createDate 2025/11/22 11:16
  */
+@Component
 @ConfigurationProperties(prefix = "vg.lite-email.async")
 public class EmailAsyncProperties {
     private int corePoolSize = 4;
     private int maxPoolSize = 8;
     private int queueCapacity = 200;
-    /**
-     * Rejected execution policy. <br>
-     * <b>Recommended: CALLER_RUNS</b> - does not drop tasks and does not throw exceptions.
-     */
     private String rejectedPolicy = "CALLER_RUNS";   // 默认为推荐策略
     private int keepAliveSeconds = 60;   // 默认 60 秒
     private int awaitTerminationSeconds = 30; // 默认 30 秒
-    // getter / setter
     private String threadNamePrefix = "vg-email-";
 
     public void validate() {
@@ -57,6 +59,38 @@ public class EmailAsyncProperties {
         if (!RejectedPolicyEnum.isValid(rejectedPolicy)) {
             throw new EmailConfigException("Invalid async.rejectedPolicy: " + rejectedPolicy
                     + ". Allowed values: CALLER_RUNS, ABORT, DISCARD, DISCARD_OLDEST.");
+        }
+    }
+
+    public Executor getEmailExecutor() {
+        validate(); // 校验配置
+
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(corePoolSize);
+        executor.setMaxPoolSize(maxPoolSize);
+        executor.setQueueCapacity(queueCapacity);
+        executor.setKeepAliveSeconds(keepAliveSeconds);
+        executor.setThreadNamePrefix(threadNamePrefix);
+
+        // 设置拒绝策略
+        executor.setRejectedExecutionHandler(toHandler(rejectedPolicy));
+
+        // 优雅停机
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(awaitTerminationSeconds);
+
+        executor.initialize();
+        return executor;
+    }
+
+    private RejectedExecutionHandler toHandler(String policy) {
+        if (policy == null) return new ThreadPoolExecutor.CallerRunsPolicy();
+        switch (policy.toUpperCase()) {
+            case "CALLER_RUNS":    return new ThreadPoolExecutor.CallerRunsPolicy();
+            case "ABORT":          return new ThreadPoolExecutor.AbortPolicy();
+            case "DISCARD":        return new ThreadPoolExecutor.DiscardPolicy();
+            case "DISCARD_OLDEST": return new ThreadPoolExecutor.DiscardOldestPolicy();
+            default:               return new ThreadPoolExecutor.CallerRunsPolicy();
         }
     }
 
@@ -122,4 +156,3 @@ public class EmailAsyncProperties {
         this.threadNamePrefix = threadNamePrefix;
     }
 }
-

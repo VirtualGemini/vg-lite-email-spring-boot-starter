@@ -1,10 +1,10 @@
 package io.github.virtualgemini.vgliteemail.component;
 
 import io.github.virtualgemini.vgliteemail.channel.meta.SmtpMeta;
-import io.github.virtualgemini.vgliteemail.properties.EmailAsyncProperties;
-import io.github.virtualgemini.vgliteemail.properties.LiteEmailLoggingProperties;
-import io.github.virtualgemini.vgliteemail.properties.LiteEmailProperties;
-import io.github.virtualgemini.vgliteemail.properties.RetryPolicyProperties;
+import io.github.virtualgemini.vgliteemail.config.properties.EmailAsyncProperties;
+import io.github.virtualgemini.vgliteemail.config.properties.LiteEmailLoggingProperties;
+import io.github.virtualgemini.vgliteemail.config.properties.LiteEmailProperties;
+import io.github.virtualgemini.vgliteemail.config.properties.RetryPolicyProperties;
 import io.github.virtualgemini.vgliteemail.utils.LiteMailLogUtil;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;

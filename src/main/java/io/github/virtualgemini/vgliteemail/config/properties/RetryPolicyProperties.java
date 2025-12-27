@@ -11,10 +11,11 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  */
-package io.github.virtualgemini.vgliteemail.properties;
+package io.github.virtualgemini.vgliteemail.config.properties;
 
 import io.github.virtualgemini.vgliteemail.api.IEmailChannel;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 /**
  * @author VirtualGemini
@@ -27,6 +28,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * 重试策略 / Retry policy
  */
 
+@Component
 @ConfigurationProperties(prefix = "vg.lite-email.retries")
 public class RetryPolicyProperties {
 

@@ -1,9 +1,9 @@
 # VG Lite Email Spring Boot Starter
 
-VG Lite Email is a lightweight, robust, and developer-friendly email solution built on Spring Boot. It provides an easy-to-use API for sending both synchronous and asynchronous emails with retry mechanisms, while integrating seamlessly into Spring Boot applications, your code reads like poetry.
+VG Lite Email 是一個輕量級、強大且開發者友好的郵件解決方案，基於 Spring Boot 構建。它提供了一個易於使用的 API，用於發送同步和異步郵件，並支持重試機制，可以無縫集成到 Spring Boot 應用程序中，讓你的代碼如同詩歌。
 
-## Demo
-Just one line to send an email:
+## 演示
+只需要一行代碼來發送郵件：
 ```java
 builder.to("email-username@example.com" ).subject("Test").text("Hello, World!").async().retry(3).send();
 ```
@@ -17,31 +17,33 @@ builder                                      // new EmailBuilder()
         .send();                             // send email
 ```
 
-## Features
+## 特性
 
-Easy Integration – Simple auto-configuration with Spring Boot.
+簡單集成 – 與 Spring Boot 無縫自動配置。
 
-Asynchronous Sending – Send emails asynchronously with a single method call.
+異步發送 – 通過一個方法調用異步發送郵件。
 
-Retry Mechanism – Built-in configurable retry for failed emails.
+重試機制 – 為失敗的郵件內置可配置的重試機制。
 
-Fluent API – Chainable for clean and readable email creation.EmailBuilder
+流暢的 API – 支持鏈式調用，生成簡潔可讀的郵件。
 
-Customizable Executors – Configure thread pools for async operations.
+可定制的執行器 – 配置異步操作的線程池。
 
 
-## Quick Start
-### Version & Compatibility
+## 快速開始
+### 版本與兼容性
+Java: 支持 Java 8、11 和 17。
 
-- **Java**: Supports Java 8, 11, and 17.
-- **Spring Boot**: Requires Spring Boot 2.6 or higher. Very old versions may cause issues.
-- **Spring 3+**: Not supported yet. This is not your fault—we are working on it and will update soon.
-- **Protocol**: Currently supports **SMTP**. More protocols will be added in future releases.
+Spring Boot: 需要 Spring Boot 2.6 或更高版本。非常舊的版本可能會有問題。
 
-### Download Jar
-You can download the jar file from the following link:
+Spring 3+: 暫不支持。我們正在努力開發，並將很快更新。
+
+協議: 當前仅支持 SMTP。更多協議將在未來版本中添加。
+
+### 下載 JAR
+你可以通過以下鏈接下載 JAR 文件：
 - https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/releases/tag/v0.1.64
-### Maven Install
+### Maven 安裝
 #### linux shell:
 ```bash
 mvn install:install-file \
@@ -64,10 +66,10 @@ mvn install:install-file `
   -Dversion=0.1.64 `
   -Dpackaging=jar
 ```
-It should be noted that in the above command, the `-Dfile` parameter needs to be replaced with the path to the jar file you downloaded.
+注意，在上述命令中，-Dfile 參數需要替換為你下載的 JAR 文件的路徑。
 
-### Maven Dependency
-Add the following dependency to your `pom.xml`:
+### Maven 依賴
+在你的 `pom.xml` 文件中添加以下依賴：
 ```xml
 <!-- VG Lite Email -->
 <dependency>
@@ -81,19 +83,20 @@ Add the following dependency to your `pom.xml`:
     <artifactId>spring-boot-starter-mail</artifactId>
 </dependency>
 ```
-Please don't forget to reload.
-### Spring Boot Configuration
-Add the following dependency to your `application.yml`:
+別忘了重新加載項目。
+
+### Spring Boot 配置
+在你的 `application.yml` 文件中添加以下配置：
 ```yaml
 vg:
   lite-email:
     sender: your-email@example.com       # your email address
     password: your_authorization_code    # your email SMTP password
 ```
-Please pay attention to the format and indentation in your `application.yml`; incorrect spacing may prevent proper loading of email settings.
+請注意 `application.yml` 檔案的格式和縮進；不正确的空白可能會防止電子郵件設定的正確加載。
 
-### Everything's Ready, We Can Take Off!
-#### Feel free to integrate it into your project and see it in action!
+### 一切就绪，我們可以起飛了！
+#### 隨意集成到你的項目中並看到效果！
 
 ```java
 import io.github.virtualgemini.vgliteemail.core.EmailBuilder;
@@ -119,8 +122,8 @@ public class Controller {
     }
 }
 ```
-#### Don’t know how to get started? Don’t worry, I’ve got you covered!
-- **Step 1**: Start your project, if you are using Spring Boot, you can start it here with one click.
+#### 不知道如何開始？別擔心，我已經準備好了！
+- **第一步**: 啟動你的項目，如果你使用 Spring Boot，可以一鍵啟動。
 ```java
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -134,7 +137,7 @@ public class SendMailDemoApplication {
 
 }
 ```
-- **Step 2**: Add HTTP REQUEST file, you can run it directly.
+- **第二步**: 添加 HTTP 請求文件，可以直接運行。
 ```http request
 POST http://localhost:8080/send
 Content-Type: application/json
@@ -143,7 +146,7 @@ Content-Type: application/json
 
 ###
 ```
-- **Step 3**: You can see the console log, status code 200 is OK.
+- **第三步**: 你可以在控制台看到日誌，狀態碼 200 表示成功。
 ```http request
 POST http://localhost:8080/send
 
@@ -157,18 +160,20 @@ Connection: keep-alive
 
 Response code: 200; Time: 87ms (87 ms); Content length: 0 bytes (0 B)
 ```
-- **Step 4**: Now! you can check your email.
+- **第四步**: 現在！你可以檢查你的郵件。
 
-## Looking ahead
-we’re planning to add scheduled tasks, batch sending, email templates, message queue integration, and more…
+## 展望未來
 
-## Conclusion & Thanks
-Core-ready, almost magic: While some features are still polishing and a few may have minor rough edges, the core email sending functionality is solid and fully usable — one line to send, async & retry ready, your emails just fly!
+我們計劃添加定時任務、批量發送、郵件模板、消息隊列集成等功能……
 
-Thank you for checking out **VG Lite Email Spring Boot Starter**! We hope it makes sending emails in your projects effortless and enjoyable.
+## 結論與感謝
 
-If you have ideas for improvements, feature requests, or find any bugs, don’t hesitate to open an issue or submit a pull request. Every bit of feedback helps us make this tool even better.
+核心功能就緒，幾乎完美：雖然一些功能仍在打磨中，可能還有一些小問題，但核心的郵件發送功能非常穩定且完全可用 —— 一行代碼發送郵件，支持異步和重試，你的郵件飛起來了！
 
-If you like the project, please give it a ⭐ on GitHub — your support keeps us motivated!
+感謝你查看 VG Lite Email Spring Boot Starter！我們希望它能讓你在項目中發送郵件變得輕鬆愉快。
 
-Happy coding and smooth emailing! 
+如果你有改進建議、功能請求或發現任何 bug，請隨時提出問題或提交拉取請求。每一條反饋都幫助我們讓這個工具變得更好。
+
+如果你喜歡這個項目，請在 GitHub 上給它一個 ⭐ —— 你的支持是我們前進的動力！
+
+祝編程愉快，郵件發送順利！

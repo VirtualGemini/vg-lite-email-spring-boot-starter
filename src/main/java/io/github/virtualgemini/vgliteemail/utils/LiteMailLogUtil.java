@@ -13,7 +13,7 @@
  */
 package io.github.virtualgemini.vgliteemail.utils;
 
-import io.github.virtualgemini.vgliteemail.properties.LiteEmailLoggingProperties;
+import io.github.virtualgemini.vgliteemail.config.properties.LiteEmailLoggingProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.logging.LogLevel;

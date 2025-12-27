@@ -24,8 +24,8 @@ import io.github.virtualgemini.vgliteemail.api.IEmailChannel;
 import io.github.virtualgemini.vgliteemail.api.IEmailSender;
 import io.github.virtualgemini.vgliteemail.core.SendRequest;
 import io.github.virtualgemini.vgliteemail.core.SendResponse;
-import io.github.virtualgemini.vgliteemail.properties.LiteEmailProperties;
-import io.github.virtualgemini.vgliteemail.properties.RetryPolicyProperties;
+import io.github.virtualgemini.vgliteemail.config.properties.LiteEmailProperties;
+import io.github.virtualgemini.vgliteemail.config.properties.RetryPolicyProperties;
 import io.github.virtualgemini.vgliteemail.utils.LiteMailLogUtil;
 
 import java.util.concurrent.CompletableFuture;

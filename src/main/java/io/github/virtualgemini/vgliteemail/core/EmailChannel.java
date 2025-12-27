@@ -15,7 +15,7 @@ package io.github.virtualgemini.vgliteemail.core;
 
 import io.github.virtualgemini.vgliteemail.api.IEmailChannel;
 import io.github.virtualgemini.vgliteemail.channel.impl.SmtpEmailChannel;
-import io.github.virtualgemini.vgliteemail.properties.LiteEmailProperties;
+import io.github.virtualgemini.vgliteemail.config.properties.LiteEmailProperties;
 import org.springframework.mail.javamail.JavaMailSender;
 
 /**

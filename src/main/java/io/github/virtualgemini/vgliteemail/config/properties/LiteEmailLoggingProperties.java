@@ -11,7 +11,7 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  */
-package io.github.virtualgemini.vgliteemail.properties;
+package io.github.virtualgemini.vgliteemail.config.properties;
 
 /**
  * @author VirtualGemini
@@ -22,7 +22,9 @@ package io.github.virtualgemini.vgliteemail.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.logging.LogLevel;
+import org.springframework.stereotype.Component;
 
+@Component
 @ConfigurationProperties(prefix = "vg.lite-email.logging")
 public class LiteEmailLoggingProperties {
     /**

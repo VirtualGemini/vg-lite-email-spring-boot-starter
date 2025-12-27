@@ -15,7 +15,7 @@ package io.github.virtualgemini.vgliteemail.core;
 
 import io.github.virtualgemini.vgliteemail.api.IEmailChannel;
 import io.github.virtualgemini.vgliteemail.api.impl.AbstractEmailSender;
-import io.github.virtualgemini.vgliteemail.properties.RetryPolicyProperties;
+import io.github.virtualgemini.vgliteemail.config.properties.RetryPolicyProperties;
 
 import java.util.concurrent.Executor;
 

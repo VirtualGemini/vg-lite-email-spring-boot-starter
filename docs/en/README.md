@@ -2,8 +2,8 @@
 
 Available in:
 - [English](README.md)
-- [简体中文](README_zh-CN.md)
-- [繁體中文](README_zh-TW.md)
+- [简体中文](../zn-CN/README.md)
+- [繁體中文](../zn-TW/README.md)
 
 # VG Lite Email Spring Boot Starter
 

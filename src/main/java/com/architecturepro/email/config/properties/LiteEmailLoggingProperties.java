@@ -3,7 +3,7 @@ package com.architecturepro.email.config.properties;
 import com.architecturepro.email.enums.LogLevelType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "vg.lite-email.logging")
+@ConfigurationProperties(prefix = "architecture.email.logging")
 public class LiteEmailLoggingProperties {
 
     private boolean enabled = true;

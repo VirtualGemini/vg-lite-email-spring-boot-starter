@@ -4,7 +4,9 @@ public record SendResponse(
         boolean success,
         String msgId,
         String error,
-        int errorCode
+        int errorCode,
+        int attempts,
+        String channel
 ) {
     public static Builder builder() {
         return new Builder();
@@ -15,6 +17,8 @@ public record SendResponse(
         private String msgId;
         private String error;
         private int errorCode;
+        private int attempts = 1;
+        private String channel;
 
         public Builder success(boolean success) {
             this.success = success;
@@ -36,8 +40,28 @@ public record SendResponse(
             return this;
         }
 
+        public Builder attempts(int attempts) {
+            this.attempts = attempts;
+            return this;
+        }
+
+        public Builder channel(String channel) {
+            this.channel = channel;
+            return this;
+        }
+
+        public Builder from(SendResponse response) {
+            this.success = response.success;
+            this.msgId = response.msgId;
+            this.error = response.error;
+            this.errorCode = response.errorCode;
+            this.attempts = response.attempts;
+            this.channel = response.channel;
+            return this;
+        }
+
         public SendResponse build() {
-            return new SendResponse(success, msgId, error, errorCode);
+            return new SendResponse(success, msgId, error, errorCode, attempts, channel);
         }
     }
 }

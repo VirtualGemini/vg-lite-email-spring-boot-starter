@@ -1,4 +1,12 @@
 package com.architecturepro.email.channel.meta;
 
-public record SmtpMeta(String host, int port, boolean ssl) {
+import com.architecturepro.email.enums.ProtocolType;
+
+public record SmtpMeta(
+        String host,
+        int port,
+        ProtocolType protocol,
+        boolean ssl,
+        boolean starttls
+) {
 }

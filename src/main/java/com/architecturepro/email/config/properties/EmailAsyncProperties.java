@@ -3,17 +3,17 @@ package com.architecturepro.email.config.properties;
 import com.architecturepro.email.exception.EmailConfigException;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "vg.lite-email.async")
+@ConfigurationProperties(prefix = "architecture.email.async")
 public class EmailAsyncProperties {
 
     private boolean enabled = true;
     private boolean virtualThreads = true;
     private int concurrencyLimit = 256;
-    private String threadNamePrefix = "vg-email-";
+    private String threadNamePrefix = "architecture-email-";
 
     public void validate() {
         if (concurrencyLimit < 1) {
-            throw new EmailConfigException("vg.lite-email.async.concurrency-limit must be >= 1");
+            throw new EmailConfigException("architecture.email.async.concurrency-limit must be >= 1");
         }
     }
 

@@ -1,28 +1,19 @@
 package com.architecturepro.email.core;
 
-import com.architecturepro.email.api.IEmailSender;
 import com.architecturepro.email.api.impl.AbstractEmailBuilder;
+import com.architecturepro.email.api.IEmailBuilder;
+public class EmailBuilder extends AbstractEmailBuilder<EmailBuilder> implements IEmailBuilder<EmailBuilder> {
 
-public class EmailBuilder extends AbstractEmailBuilder<EmailBuilder> {
-
-    private final IEmailSender sender;
-
-    public EmailBuilder(IEmailSender sender) {
-        this(sender, null, null, null, false, 1, false);
+    public EmailBuilder(EmailSender sender) {
+        this(sender, SendRequest.builder().build());
     }
 
-    private EmailBuilder(IEmailSender sender, String to, String subject, String text, boolean html, int retry, boolean async) {
-        super(to, subject, text, html, retry, async);
-        this.sender = sender;
+    public EmailBuilder(EmailSender sender, SendRequest request) {
+        super(sender, request);
     }
 
     @Override
-    protected IEmailSender sender() {
-        return sender;
-    }
-
-    @Override
-    protected EmailBuilder newBuilder(String to, String subject, String text, boolean html, int retry, boolean async) {
-        return new EmailBuilder(sender, to, subject, text, html, retry, async);
+    protected EmailBuilder newBuilder(SendRequest request) {
+        return new EmailBuilder(sender, request);
     }
 }

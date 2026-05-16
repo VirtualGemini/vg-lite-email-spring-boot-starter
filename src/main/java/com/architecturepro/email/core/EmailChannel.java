@@ -1,32 +1,16 @@
 package com.architecturepro.email.core;
 
-import com.architecturepro.email.api.IEmailChannel;
-import com.architecturepro.email.channel.impl.SmtpEmailChannel;
-import com.architecturepro.email.config.properties.LiteEmailProperties;
-import org.springframework.mail.javamail.JavaMailSender;
+import java.util.Set;
 
-public class EmailChannel implements IEmailChannel {
+public interface EmailChannel {
 
-    private final IEmailChannel delegate;
+    Set<Integer> DEFAULT_RETRYABLE = Set.of(421, 450, 451, 452);
 
-    public EmailChannel(LiteEmailProperties properties, JavaMailSender mailSender) {
-        delegate = switch (properties.getProtocol()) {
-            case SMTP -> new SmtpEmailChannel(mailSender, properties.getSender());
-        };
-    }
+    String name();
 
-    @Override
-    public String name() {
-        return delegate.name();
-    }
+    SendResponse send(SendRequest request);
 
-    @Override
-    public SendResponse send(SendRequest request) {
-        return delegate.send(request);
-    }
-
-    @Override
-    public boolean retryable(int errorCode) {
-        return delegate.retryable(errorCode);
+    default boolean retryable(SendResponse response) {
+        return DEFAULT_RETRYABLE.contains(response.errorCode());
     }
 }

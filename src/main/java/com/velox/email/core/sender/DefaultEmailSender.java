@@ -8,6 +8,7 @@ import com.velox.email.spi.hook.EmailSendInterceptor;
 import com.velox.email.spi.hook.EmailSendListener;
 import com.velox.email.spi.policy.RetryPolicy;
 import com.velox.email.spi.sender.AbstractEmailSender;
+import com.velox.email.support.util.VeloxEmailLogger;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -15,13 +16,14 @@ import java.util.concurrent.Executor;
 public class DefaultEmailSender extends AbstractEmailSender {
 
     public DefaultEmailSender(EmailChannel channel,
+                              VeloxEmailLogger logger,
                               Executor executor,
                               RetryPolicy retryPolicy,
                               EmailExceptionTranslator exceptionTranslator,
                               List<EmailSendInterceptor> interceptors,
                               List<EmailSendListener> listeners,
                               SendRequest defaults) {
-        super(channel, executor, retryPolicy, exceptionTranslator, interceptors, listeners, defaults);
+        super(channel, logger, executor, retryPolicy, exceptionTranslator, interceptors, listeners, defaults);
     }
 
     @Override

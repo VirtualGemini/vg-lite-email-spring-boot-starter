@@ -23,11 +23,11 @@ import com.velox.email.spi.policy.RetryPolicy;
 import com.velox.email.api.message.SendRequest;
 import com.velox.email.common.message.EmailCommonMessages;
 import com.velox.email.exception.EmailConfigException;
-import com.velox.email.exception.EmailSendException;
 import com.velox.email.noop.DisabledEmailSender;
 import com.velox.email.noop.NoOpEmailChannel;
 import com.velox.email.support.type.ProtocolType;
-import com.velox.email.support.util.VeloxEmailLogUtil;
+import com.velox.email.support.util.ManagedEmailExecutor;
+import com.velox.email.support.util.VeloxEmailLogger;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -37,6 +37,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
@@ -44,12 +45,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
 
 @AutoConfiguration
-@ConditionalOnClass(JavaMailSender.class)
 @EnableConfigurationProperties({
         VeloxEmailProperties.class,
         EmailAsyncProperties.class,
@@ -68,67 +65,30 @@ public class VeloxEmailAutoConfiguration {
     private static final String MAIL_SMTP_TIMEOUT = "mail.smtp.timeout";
     private static final String MAIL_SMTP_WRITE_TIMEOUT = "mail.smtp.writetimeout";
 
-    @Bean
-    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
-    @ConditionalOnMissingBean(name = "veloxEmailJavaMailSender", value = {EmailChannel.class, EmailSender.class})
-    public JavaMailSender veloxEmailJavaMailSender(VeloxEmailProperties properties,
-                                                          VeloxEmailLoggingProperties loggingProperties) {
-        VeloxEmailLogUtil.setLoggingProperties(loggingProperties);
-        properties.validateForSmtp();
-
-        SmtpMeta meta = resolveSmtpMeta(properties);
-        JavaMailSenderImpl sender = new JavaMailSenderImpl();
-        sender.setHost(meta.host());
-        sender.setPort(meta.port());
-        sender.setProtocol(SMTP_PROTOCOL);
-        sender.setUsername(properties.getUsername());
-        sender.setPassword(properties.getPassword());
-        sender.setDefaultEncoding(UTF_8);
-
-        Properties mailProperties = sender.getJavaMailProperties();
-        mailProperties.setProperty(MAIL_TRANSPORT_PROTOCOL, sender.getProtocol());
-        mailProperties.setProperty(MAIL_SMTP_AUTH, Boolean.toString(properties.isAuth()));
-        mailProperties.setProperty(MAIL_SMTP_SSL_ENABLE, Boolean.toString(meta.ssl()));
-        mailProperties.setProperty(MAIL_SMTP_STARTTLS_ENABLE, Boolean.toString(meta.starttls()));
-        mailProperties.setProperty(MAIL_SMTP_CONNECTION_TIMEOUT, Long.toString(properties.getConnectionTimeout()));
-        mailProperties.setProperty(MAIL_SMTP_TIMEOUT, Long.toString(properties.getTimeout()));
-        mailProperties.setProperty(MAIL_SMTP_WRITE_TIMEOUT, Long.toString(properties.getWriteTimeout()));
-        return sender;
-    }
-
     @Bean(name = "veloxEmailExecutor")
     @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
     @ConditionalOnMissingBean(name = "veloxEmailExecutor")
-    public Executor veloxEmailExecutor(EmailAsyncProperties properties) {
+    public ManagedEmailExecutor veloxEmailExecutor(EmailAsyncProperties properties) {
         properties.validate();
         if (!properties.isEnabled()) {
-            return Runnable::run;
+            return ManagedEmailExecutor.direct();
         }
         if (properties.isVirtualThreads()) {
-            Semaphore semaphore = new Semaphore(properties.getConcurrencyLimit());
-            ExecutorService executorService = Executors.newThreadPerTaskExecutor(
-                    Thread.ofVirtual().name(properties.getThreadNamePrefix(), 0).factory()
+            return ManagedEmailExecutor.boundedVirtualThreads(
+                    properties.getConcurrencyLimit(),
+                    properties.getThreadNamePrefix()
             );
-            return command -> {
-                try {
-                    semaphore.acquire();
-                } catch (InterruptedException exception) {
-                    Thread.currentThread().interrupt();
-                    throw new EmailSendException(EmailCommonMessages.EMAIL_EXECUTOR_INTERRUPTED, exception);
-                }
-                executorService.execute(() -> {
-                    try {
-                        command.run();
-                    } finally {
-                        semaphore.release();
-                    }
-                });
-            };
         }
-        return Executors.newFixedThreadPool(
+        return ManagedEmailExecutor.fixedThreadPool(
                 properties.getConcurrencyLimit(),
-                Thread.ofPlatform().name(properties.getThreadNamePrefix(), 0).factory()
+                properties.getThreadNamePrefix()
         );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public VeloxEmailLogger veloxEmailLogger(VeloxEmailLoggingProperties properties) {
+        return new VeloxEmailLogger(properties.isEnabled(), properties.getLevel());
     }
 
     @Bean
@@ -149,22 +109,9 @@ public class VeloxEmailAutoConfiguration {
     @Bean
     @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
     @ConditionalOnMissingBean
-    @ConditionalOnBean(name = "veloxEmailJavaMailSender")
-    public IEmailChannel emailChannel(@Qualifier("veloxEmailJavaMailSender") JavaMailSender mailSender) {
-        return new SmtpEmailChannel(mailSender);
-    }
-
-    @Bean
-    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "false", matchIfMissing = true)
-    @ConditionalOnMissingBean(IEmailChannel.class)
-    public IEmailChannel disabledEmailChannel() {
-        return new NoOpEmailChannel();
-    }
-
-    @Bean
-    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
-    @ConditionalOnMissingBean
+    @ConditionalOnBean(EmailChannel.class)
     public IEmailSender emailSender(EmailChannel channel,
+                                    VeloxEmailLogger logger,
                                     @Qualifier("veloxEmailExecutor") Executor executor,
                                     RetryPolicy retryPolicy,
                                     EmailExceptionTranslator exceptionTranslator,
@@ -173,18 +120,26 @@ public class VeloxEmailAutoConfiguration {
                                     ObjectProvider<EmailSendListener> listenersProvider) {
         List<EmailSendInterceptor> interceptors = interceptorsProvider.orderedStream().collect(Collectors.toList());
         List<EmailSendListener> listeners = listenersProvider.orderedStream().collect(Collectors.toList());
-        return new DefaultEmailSender(channel, executor, retryPolicy, exceptionTranslator, interceptors, listeners, buildDefaults(properties));
+        return new DefaultEmailSender(channel, logger, executor, retryPolicy, exceptionTranslator, interceptors, listeners, buildDefaults(properties));
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "false", matchIfMissing = true)
+    @ConditionalOnMissingBean(IEmailChannel.class)
+    public IEmailChannel disabledEmailChannel(VeloxEmailLogger logger) {
+        return new NoOpEmailChannel(logger);
     }
 
     @Bean
     @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "false", matchIfMissing = true)
     @ConditionalOnMissingBean(IEmailSender.class)
-    public IEmailSender disabledEmailSender() {
-        return new DisabledEmailSender();
+    public IEmailSender disabledEmailSender(VeloxEmailLogger logger) {
+        return new DisabledEmailSender(logger);
     }
 
     @Bean
     @ConditionalOnMissingBean(EmailBuilderFactory.class)
+    @ConditionalOnBean(EmailSender.class)
     public EmailBuilderFactory<EmailBuilder> emailBuilderFactory(EmailSender emailSender, VeloxEmailProperties properties) {
         return new DefaultEmailBuilderFactory(emailSender, buildDefaults(properties));
     }
@@ -196,34 +151,73 @@ public class VeloxEmailAutoConfiguration {
         return emailBuilderFactory.newMessage();
     }
 
-    private SmtpMeta resolveSmtpMeta(VeloxEmailProperties properties) {
-        boolean hasHost = properties.getHost() != null && !properties.getHost().isBlank();
-        boolean hasPort = properties.getPort() != null && properties.getPort() > 0;
-        if (hasHost && hasPort) {
-            ProtocolType protocol = properties.getProtocol() != null
-                    ? properties.getProtocol()
-                    : ((properties.getSsl() != null && properties.getSsl()) ? ProtocolType.SMTPS : ProtocolType.SMTP);
-            boolean ssl = properties.getSsl() != null ? properties.getSsl() : protocol == ProtocolType.SMTPS;
-            boolean starttls = properties.getStarttls() != null ? properties.getStarttls() : (!ssl && protocol == ProtocolType.SMTP);
-            return new SmtpMeta(properties.getHost(), properties.getPort(), protocol, ssl, starttls);
-        }
-
-        if (!properties.isProviderAutoDetect()) {
-            throw new EmailConfigException(EmailCommonMessages.EMAIL_HOST_AND_PORT_REQUIRED);
-        }
-
-        SmtpMeta detected = SmtpEmailChannel.guessMeta(properties.getUsername());
-        boolean ssl = properties.getSsl() != null ? properties.getSsl() : detected.ssl();
-        boolean starttls = properties.getStarttls() != null ? properties.getStarttls() : detected.starttls();
-        ProtocolType protocol = properties.getProtocol() != null ? properties.getProtocol() : detected.protocol();
-        return new SmtpMeta(detected.host(), detected.port(), protocol, ssl, starttls);
-    }
-
     private SendRequest buildDefaults(VeloxEmailProperties properties) {
         return SendRequest.builder()
                 .from(properties.getFrom())
                 .fromName(properties.getFromName())
                 .replyTo(properties.getReplyTo())
                 .build();
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnClass(JavaMailSender.class)
+    static class SmtpSupportConfiguration {
+
+        @Bean
+        @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
+        @ConditionalOnMissingBean(name = "veloxEmailJavaMailSender", value = {EmailChannel.class, EmailSender.class})
+        public JavaMailSender veloxEmailJavaMailSender(VeloxEmailProperties properties) {
+            properties.validateForSmtp();
+
+            SmtpMeta meta = resolveSmtpMeta(properties);
+            JavaMailSenderImpl sender = new JavaMailSenderImpl();
+            sender.setHost(meta.host());
+            sender.setPort(meta.port());
+            sender.setProtocol(SMTP_PROTOCOL);
+            sender.setUsername(properties.getUsername());
+            sender.setPassword(properties.getPassword());
+            sender.setDefaultEncoding(UTF_8);
+
+            Properties mailProperties = sender.getJavaMailProperties();
+            mailProperties.setProperty(MAIL_TRANSPORT_PROTOCOL, sender.getProtocol());
+            mailProperties.setProperty(MAIL_SMTP_AUTH, Boolean.toString(properties.isAuth()));
+            mailProperties.setProperty(MAIL_SMTP_SSL_ENABLE, Boolean.toString(meta.ssl()));
+            mailProperties.setProperty(MAIL_SMTP_STARTTLS_ENABLE, Boolean.toString(meta.starttls()));
+            mailProperties.setProperty(MAIL_SMTP_CONNECTION_TIMEOUT, Long.toString(properties.getConnectionTimeout()));
+            mailProperties.setProperty(MAIL_SMTP_TIMEOUT, Long.toString(properties.getTimeout()));
+            mailProperties.setProperty(MAIL_SMTP_WRITE_TIMEOUT, Long.toString(properties.getWriteTimeout()));
+            return sender;
+        }
+
+        @Bean
+        @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
+        @ConditionalOnMissingBean
+        @ConditionalOnBean(name = "veloxEmailJavaMailSender")
+        public IEmailChannel emailChannel(@Qualifier("veloxEmailJavaMailSender") JavaMailSender mailSender) {
+            return new SmtpEmailChannel(mailSender);
+        }
+
+        private static SmtpMeta resolveSmtpMeta(VeloxEmailProperties properties) {
+            boolean hasHost = properties.getHost() != null && !properties.getHost().isBlank();
+            boolean hasPort = properties.getPort() != null && properties.getPort() > 0;
+            if (hasHost && hasPort) {
+                ProtocolType protocol = properties.getProtocol() != null
+                        ? properties.getProtocol()
+                        : ((properties.getSsl() != null && properties.getSsl()) ? ProtocolType.SMTPS : ProtocolType.SMTP);
+                boolean ssl = properties.getSsl() != null ? properties.getSsl() : protocol == ProtocolType.SMTPS;
+                boolean starttls = properties.getStarttls() != null ? properties.getStarttls() : (!ssl && protocol == ProtocolType.SMTP);
+                return new SmtpMeta(properties.getHost(), properties.getPort(), protocol, ssl, starttls);
+            }
+
+            if (!properties.isProviderAutoDetect()) {
+                throw new EmailConfigException(EmailCommonMessages.EMAIL_HOST_AND_PORT_REQUIRED);
+            }
+
+            SmtpMeta detected = SmtpEmailChannel.guessMeta(properties.getUsername());
+            boolean ssl = properties.getSsl() != null ? properties.getSsl() : detected.ssl();
+            boolean starttls = properties.getStarttls() != null ? properties.getStarttls() : detected.starttls();
+            ProtocolType protocol = properties.getProtocol() != null ? properties.getProtocol() : detected.protocol();
+            return new SmtpMeta(detected.host(), detected.port(), protocol, ssl, starttls);
+        }
     }
 }

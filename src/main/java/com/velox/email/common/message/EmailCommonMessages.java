@@ -8,6 +8,7 @@ public final class EmailCommonMessages {
     public static final String FILENAME_MUST_NOT_BE_NULL = "filename must not be null";
     public static final String SOURCE_MUST_NOT_BE_NULL = "source must not be null";
     public static final String CHANNEL_MUST_NOT_BE_NULL = "channel must not be null";
+    public static final String LOGGER_MUST_NOT_BE_NULL = "logger must not be null";
     public static final String EXECUTOR_MUST_NOT_BE_NULL = "executor must not be null";
     public static final String RETRY_POLICY_MUST_NOT_BE_NULL = "retryPolicy must not be null";
     public static final String EXCEPTION_TRANSLATOR_MUST_NOT_BE_NULL = "exceptionTranslator must not be null";
@@ -25,6 +26,7 @@ public final class EmailCommonMessages {
     public static final String EMAIL_RETRY_MULTIPLIER_INVALID = "velox.email.retry.multiplier must be >= 1.0";
     public static final String EMAIL_RETRY_INITIAL_DELAY_INVALID = "velox.email.retry.initial-delay must be >= 0";
     public static final String EMAIL_RETRY_MAX_DELAY_INVALID = "velox.email.retry.max-delay must be >= 0";
+    public static final String EMAIL_RETRY_DELAY_INTERRUPTED = "Interrupted while waiting before next email retry";
     public static final String EMAIL_ATTACHMENT_INPUT_STREAM_READ_FAILED = "Failed to read email attachment input stream";
     public static final String EMAIL_SEND_INTERCEPTOR_BEFORE_RETURNED_NULL = "EmailSendInterceptor.beforeSend must not return null";
     public static final String EMAIL_SEND_INTERCEPTOR_AFTER_RETURNED_NULL = "EmailSendInterceptor.afterSend must not return null";

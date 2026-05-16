@@ -1,5 +1,6 @@
 package com.velox.email.spi.builder;
 
+import com.velox.email.api.builder.AsyncEmailDispatch;
 import com.velox.email.api.builder.IEmailBuilder;
 import com.velox.email.api.message.EmailAttachment;
 import com.velox.email.api.message.EmailFailureContext;
@@ -162,8 +163,8 @@ public abstract class AbstractEmailBuilder<T extends AbstractEmailBuilder<T>> im
     }
 
     @Override
-    public T async() {
-        return with(request.toBuilder().async(true).build());
+    public AsyncEmailDispatch async() {
+        return () -> sender.sendAsync(request.toBuilder().async(true).build());
     }
 
     @Override
@@ -182,10 +183,8 @@ public abstract class AbstractEmailBuilder<T extends AbstractEmailBuilder<T>> im
     }
 
     @Override
-    public Object send() {
-        return request.async()
-                ? sender.sendAsync(request.toBuilder().async(true).build())
-                : sendSync();
+    public SendResponse send() {
+        return sendSync();
     }
 
     private T appendAttachment(EmailAttachment attachment) {

@@ -63,7 +63,7 @@ public interface EmailMessageBuilder<T extends EmailMessageBuilder<T>> {
 
     T retry();
 
-    T async();
+    AsyncEmailDispatch async();
 
     T onFailure(Consumer<EmailFailureContext> failureHook);
 
@@ -71,5 +71,5 @@ public interface EmailMessageBuilder<T extends EmailMessageBuilder<T>> {
 
     SendResponse sendSync();
 
-    Object send();
+    SendResponse send();
 }

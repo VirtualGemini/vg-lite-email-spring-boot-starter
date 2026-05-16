@@ -11,17 +11,23 @@ import com.velox.email.api.message.SendRequest;
 import com.velox.email.api.message.SendResponse;
 import com.velox.email.common.message.EmailCommonMessages;
 import com.velox.email.exception.EmailSendException;
-import com.velox.email.support.util.VeloxEmailLogUtil;
+import com.velox.email.support.util.VeloxEmailLogger;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.locks.LockSupport;
+import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractEmailSender implements IEmailSender {
 
+    private static final String LOG_START_SENDING = "Start sending email to {}";
+    private static final String LOG_SEND_SUCCESS = "Email sent successfully on attempt {}";
+    private static final String LOG_SEND_FAILURE = "Email failed after {} attempt(s), errorCode={}";
+    private static final String LOG_RETRY_DELAY = "Retrying after {} ms";
+
     protected final EmailChannel channel;
+    private final VeloxEmailLogger logger;
     private final Executor executor;
     private final RetryPolicy retryPolicy;
     private final EmailExceptionTranslator exceptionTranslator;
@@ -30,6 +36,7 @@ public abstract class AbstractEmailSender implements IEmailSender {
     private final SendRequest defaults;
 
     protected AbstractEmailSender(EmailChannel channel,
+                                  VeloxEmailLogger logger,
                                   Executor executor,
                                   RetryPolicy retryPolicy,
                                   EmailExceptionTranslator exceptionTranslator,
@@ -37,6 +44,7 @@ public abstract class AbstractEmailSender implements IEmailSender {
                                   List<EmailSendListener> listeners,
                                   SendRequest defaults) {
         this.channel = requireChannel(channel);
+        this.logger = requireLogger(logger);
         this.executor = requireExecutor(executor);
         this.retryPolicy = requireRetryPolicy(retryPolicy);
         this.exceptionTranslator = requireExceptionTranslator(exceptionTranslator);
@@ -49,7 +57,7 @@ public abstract class AbstractEmailSender implements IEmailSender {
     public SendResponse send(SendRequest request) {
         SendRequest mergedRequest = applyInterceptors(applyDefaults(request));
         validateRequest(mergedRequest);
-        VeloxEmailLogUtil.info(channel.name(), "Start sending email to {}", mergedRequest.to());
+        logger.info(channel.name(), LOG_START_SENDING, mergedRequest.to());
 
         RetryPolicy activeRetryPolicy = mergedRequest.retryPolicy() != null ? mergedRequest.retryPolicy() : retryPolicy;
         SendResponse finalResponse = null;
@@ -59,28 +67,28 @@ public abstract class AbstractEmailSender implements IEmailSender {
             try {
                 finalResponse = enrichResponse(doSend(mergedRequest), attempt);
                 finalCause = null;
-            } catch (Throwable throwable) {
-                finalCause = throwable;
-                finalResponse = enrichResponse(exceptionTranslator.translate(channel.name(), mergedRequest, throwable), attempt);
+            } catch (Exception exception) {
+                finalCause = exception;
+                finalResponse = enrichResponse(exceptionTranslator.translate(channel.name(), mergedRequest, exception), attempt);
             }
 
             if (finalResponse.success()) {
                 SendResponse response = applyAfterInterceptors(mergedRequest, finalResponse);
-                VeloxEmailLogUtil.info(channel.name(), "Email sent successfully on attempt {}", attempt);
+                logger.info(channel.name(), LOG_SEND_SUCCESS, attempt);
                 notifySuccess(mergedRequest, response);
                 return response;
             }
 
             if (!channel.retryable(finalResponse) || !activeRetryPolicy.shouldRetry(mergedRequest, finalResponse, attempt)) {
                 SendResponse response = applyAfterInterceptors(mergedRequest, finalResponse);
-                VeloxEmailLogUtil.warn(channel.name(), "Email failed after {} attempt(s), errorCode={}", attempt, response.errorCode());
+                logger.warn(channel.name(), LOG_SEND_FAILURE, attempt, response.errorCode());
                 notifyFailure(mergedRequest, response, finalCause);
                 return response;
             }
 
             Duration delay = activeRetryPolicy.nextDelay(mergedRequest, finalResponse, attempt);
-            VeloxEmailLogUtil.info(channel.name(), "Retrying after {} ms", delay.toMillis());
-            LockSupport.parkNanos(delay.toNanos());
+            logger.info(channel.name(), LOG_RETRY_DELAY, delay.toMillis());
+            awaitRetryDelay(delay);
         }
     }
 
@@ -164,6 +172,15 @@ public abstract class AbstractEmailSender implements IEmailSender {
         return value == null || value.isBlank();
     }
 
+    private void awaitRetryDelay(Duration delay) {
+        try {
+            TimeUnit.NANOSECONDS.sleep(Math.max(0L, delay.toNanos()));
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new EmailSendException(EmailCommonMessages.EMAIL_RETRY_DELAY_INTERRUPTED, exception);
+        }
+    }
+
     private EmailChannel requireChannel(EmailChannel channel) {
         if (channel == null) {
             throw new EmailSendException(EmailCommonMessages.CHANNEL_MUST_NOT_BE_NULL);
@@ -176,6 +193,13 @@ public abstract class AbstractEmailSender implements IEmailSender {
             throw new EmailSendException(EmailCommonMessages.EXECUTOR_MUST_NOT_BE_NULL);
         }
         return executor;
+    }
+
+    private VeloxEmailLogger requireLogger(VeloxEmailLogger logger) {
+        if (logger == null) {
+            throw new EmailSendException(EmailCommonMessages.LOGGER_MUST_NOT_BE_NULL);
+        }
+        return logger;
     }
 
     private RetryPolicy requireRetryPolicy(RetryPolicy retryPolicy) {

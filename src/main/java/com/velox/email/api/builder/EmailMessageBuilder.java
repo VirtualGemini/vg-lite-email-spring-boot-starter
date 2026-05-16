@@ -9,7 +9,6 @@ import org.springframework.core.io.Resource;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public interface EmailMessageBuilder<T extends EmailMessageBuilder<T>> {
@@ -71,8 +70,6 @@ public interface EmailMessageBuilder<T extends EmailMessageBuilder<T>> {
     SendRequest build();
 
     SendResponse sendSync();
-
-    CompletableFuture<SendResponse> sendAsync();
 
     Object send();
 }

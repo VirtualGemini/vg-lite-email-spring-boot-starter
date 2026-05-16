@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public abstract class AbstractEmailBuilder<T extends AbstractEmailBuilder<T>> implements IEmailBuilder<T> {
@@ -183,13 +182,10 @@ public abstract class AbstractEmailBuilder<T extends AbstractEmailBuilder<T>> im
     }
 
     @Override
-    public CompletableFuture<SendResponse> sendAsync() {
-        return sender.sendAsync(request.toBuilder().async(true).build());
-    }
-
-    @Override
     public Object send() {
-        return request.async() ? sendAsync() : sendSync();
+        return request.async()
+                ? sender.sendAsync(request.toBuilder().async(true).build())
+                : sendSync();
     }
 
     private T appendAttachment(EmailAttachment attachment) {

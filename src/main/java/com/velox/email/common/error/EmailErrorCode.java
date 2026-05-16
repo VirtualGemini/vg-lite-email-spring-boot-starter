@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 public enum EmailErrorCode {
 
+    DISABLED(-2, false),
     UNKNOWN(-1, false),
     SMTP_SERVICE_NOT_AVAILABLE(421, true),
     SMTP_MAILBOX_UNAVAILABLE(450, true),

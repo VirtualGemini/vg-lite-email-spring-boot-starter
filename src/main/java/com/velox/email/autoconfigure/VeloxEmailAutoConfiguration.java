@@ -24,6 +24,8 @@ import com.velox.email.api.message.SendRequest;
 import com.velox.email.common.message.EmailCommonMessages;
 import com.velox.email.exception.EmailConfigException;
 import com.velox.email.exception.EmailSendException;
+import com.velox.email.noop.DisabledEmailSender;
+import com.velox.email.noop.NoOpEmailChannel;
 import com.velox.email.support.type.ProtocolType;
 import com.velox.email.support.util.VeloxEmailLogUtil;
 import org.springframework.beans.factory.ObjectProvider;
@@ -48,7 +50,6 @@ import java.util.concurrent.Semaphore;
 
 @AutoConfiguration
 @ConditionalOnClass(JavaMailSender.class)
-@ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
 @EnableConfigurationProperties({
         VeloxEmailProperties.class,
         EmailAsyncProperties.class,
@@ -68,6 +69,7 @@ public class VeloxEmailAutoConfiguration {
     private static final String MAIL_SMTP_WRITE_TIMEOUT = "mail.smtp.writetimeout";
 
     @Bean
+    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
     @ConditionalOnMissingBean(name = "veloxEmailJavaMailSender", value = {EmailChannel.class, EmailSender.class})
     public JavaMailSender veloxEmailJavaMailSender(VeloxEmailProperties properties,
                                                           VeloxEmailLoggingProperties loggingProperties) {
@@ -95,6 +97,7 @@ public class VeloxEmailAutoConfiguration {
     }
 
     @Bean(name = "veloxEmailExecutor")
+    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
     @ConditionalOnMissingBean(name = "veloxEmailExecutor")
     public Executor veloxEmailExecutor(EmailAsyncProperties properties) {
         properties.validate();
@@ -129,6 +132,7 @@ public class VeloxEmailAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
     @ConditionalOnMissingBean
     public RetryPolicy retryPolicy(RetryPolicyProperties properties) {
         properties.validate();
@@ -136,12 +140,14 @@ public class VeloxEmailAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
     @ConditionalOnMissingBean
     public EmailExceptionTranslator emailExceptionTranslator() {
         return new DefaultEmailExceptionTranslator();
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
     @ConditionalOnMissingBean
     @ConditionalOnBean(name = "veloxEmailJavaMailSender")
     public IEmailChannel emailChannel(@Qualifier("veloxEmailJavaMailSender") JavaMailSender mailSender) {
@@ -149,6 +155,14 @@ public class VeloxEmailAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "false", matchIfMissing = true)
+    @ConditionalOnMissingBean(IEmailChannel.class)
+    public IEmailChannel disabledEmailChannel() {
+        return new NoOpEmailChannel();
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
     @ConditionalOnMissingBean
     public IEmailSender emailSender(EmailChannel channel,
                                     @Qualifier("veloxEmailExecutor") Executor executor,
@@ -160,6 +174,13 @@ public class VeloxEmailAutoConfiguration {
         List<EmailSendInterceptor> interceptors = interceptorsProvider.orderedStream().collect(Collectors.toList());
         List<EmailSendListener> listeners = listenersProvider.orderedStream().collect(Collectors.toList());
         return new DefaultEmailSender(channel, executor, retryPolicy, exceptionTranslator, interceptors, listeners, buildDefaults(properties));
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "false", matchIfMissing = true)
+    @ConditionalOnMissingBean(IEmailSender.class)
+    public IEmailSender disabledEmailSender() {
+        return new DisabledEmailSender();
     }
 
     @Bean

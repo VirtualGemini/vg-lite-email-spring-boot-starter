@@ -28,10 +28,10 @@ Example:
 
 ```java
 emailBuilder
-        .to("user@example.com")
-        .subject("Reset Password")
-        .text("Your verification code is 123456")
-        .sendSync();
+        .to("example@velox.com")
+        .subject("Test")
+        .text("Hello, World!")
+        .send();
 ```
 
 ### 2. Async Thread Pool Execution
@@ -128,27 +128,26 @@ Basic configuration:
 velox:
   email:
     enabled: true
-    username: xxx@example.com
+    username: example@velox.com
     password: your-password-or-token
-    from: xxx@example.com
+    from: example@velox.com
 ```
 
 HTML async example:
 
 ```java
 emailBuilder
-        .to("user@example.com")
+        .to("example@velox.com")
         .subject("Welcome")
         .html("<h1>Welcome to Velox</h1>")
-        .async()
-        .sendAsync();
+        .sendSync(); // or .async().send();
 ```
 
 Attachment and failure hook example:
 
 ```java
 emailBuilder
-        .to("user@example.com")
+        .to("example@velox.com")
         .subject("Report")
         .text("Please check the attachment")
         .attachment(file)
@@ -169,11 +168,11 @@ emailBuilder
 - `com.velox.email.api.sender.IEmailSender`
 - `com.velox.email.api.channel.IEmailChannel`
 
-## Typical Use Cases
+## Positioning
 
-- registration verification
-- forgot password
-- system notification
-- approval reminder
-- report delivery
-- replaceable product-level email infrastructure
+This starter is intended for:
+
+- transactional email delivery
+- notification delivery infrastructure
+- SMTP-based integration with replaceable contracts
+- custom mail infrastructure inside Spring Boot systems

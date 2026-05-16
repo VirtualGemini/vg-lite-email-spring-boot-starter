@@ -2,6 +2,7 @@ package com.velox.email.common.channel;
 
 public enum EmailChannelType {
 
+    NOOP("NOOP"),
     SMTP("SMTP");
 
     private final String code;

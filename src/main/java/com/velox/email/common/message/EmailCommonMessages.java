@@ -28,6 +28,7 @@ public final class EmailCommonMessages {
     public static final String EMAIL_ATTACHMENT_INPUT_STREAM_READ_FAILED = "Failed to read email attachment input stream";
     public static final String EMAIL_SEND_INTERCEPTOR_BEFORE_RETURNED_NULL = "EmailSendInterceptor.beforeSend must not return null";
     public static final String EMAIL_SEND_INTERCEPTOR_AFTER_RETURNED_NULL = "EmailSendInterceptor.afterSend must not return null";
+    public static final String EMAIL_CAPABILITY_DISABLED = "Velox email capability is disabled. Please enable velox.email.enabled=true.";
 
     private EmailCommonMessages() {
     }

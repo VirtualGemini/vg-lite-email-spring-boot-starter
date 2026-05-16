@@ -28,10 +28,10 @@
 
 ```java
 emailBuilder
-        .to("user@example.com")
-        .subject("Reset Password")
-        .text("Your verification code is 123456")
-        .sendSync();
+        .to("example@velox.com")
+        .subject("Test")
+        .text("Hello, World!")
+        .send();
 ```
 
 ### 2. 异步线程池执行
@@ -128,27 +128,26 @@ velox:
 velox:
   email:
     enabled: true
-    username: xxx@example.com
+    username: example@velox.com
     password: your-password-or-token
-    from: xxx@example.com
+    from: example@velox.com
 ```
 
 HTML 异步发送示例：
 
 ```java
 emailBuilder
-        .to("user@example.com")
+        .to("example@velox.com")
         .subject("Welcome")
         .html("<h1>Welcome to Velox</h1>")
-        .async()
-        .sendAsync();
+        .sendSync(); // 或者 .async().send();
 ```
 
 附件与失败回调示例：
 
 ```java
 emailBuilder
-        .to("user@example.com")
+        .to("example@velox.com")
         .subject("Report")
         .text("Please check the attachment")
         .attachment(file)
@@ -169,11 +168,11 @@ emailBuilder
 - `com.velox.email.api.sender.IEmailSender`
 - `com.velox.email.api.channel.IEmailChannel`
 
-## 典型使用场景
+## 模块定位
 
-- 注册验证码
-- 找回密码
-- 系统通知
-- 审批提醒
-- 报表投递
-- 可替换的产品级邮件基础设施
+这个 starter 更适合以下基础设施定位：
+
+- transactional email 投递
+- notification delivery 基础能力
+- 基于 SMTP 的可替换集成能力
+- Spring Boot 系统中的自定义邮件基础设施

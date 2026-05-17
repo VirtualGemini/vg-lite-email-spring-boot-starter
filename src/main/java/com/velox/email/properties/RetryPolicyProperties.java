@@ -1,12 +1,13 @@
 package com.velox.email.properties;
 
+import com.velox.email.common.prefix.EmailPropertyPrefixes;
 import com.velox.email.common.message.EmailCommonMessages;
 import com.velox.email.exception.EmailConfigException;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
 
-@ConfigurationProperties(prefix = "velox.email.retry")
+@ConfigurationProperties(prefix = EmailPropertyPrefixes.EMAIL_RETRY)
 public class RetryPolicyProperties {
 
     private boolean enabled = true;

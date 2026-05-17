@@ -2,6 +2,7 @@ package com.velox.email.autoconfigure;
 
 import com.velox.email.api.channel.IEmailChannel;
 import com.velox.email.api.sender.IEmailSender;
+import com.velox.email.common.prefix.EmailPropertyPrefixes;
 import com.velox.email.support.channel.SmtpEmailChannel;
 import com.velox.email.support.meta.SmtpMeta;
 import com.velox.email.properties.EmailAsyncProperties;
@@ -66,7 +67,7 @@ public class VeloxEmailAutoConfiguration {
     private static final String MAIL_SMTP_WRITE_TIMEOUT = "mail.smtp.writetimeout";
 
     @Bean(name = "veloxEmailExecutor")
-    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
+    @ConditionalOnProperty(prefix = EmailPropertyPrefixes.EMAIL, name = "enabled", havingValue = "true")
     @ConditionalOnMissingBean(name = "veloxEmailExecutor")
     public ManagedEmailExecutor veloxEmailExecutor(EmailAsyncProperties properties) {
         properties.validate();
@@ -92,7 +93,7 @@ public class VeloxEmailAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
+    @ConditionalOnProperty(prefix = EmailPropertyPrefixes.EMAIL, name = "enabled", havingValue = "true")
     @ConditionalOnMissingBean
     public RetryPolicy retryPolicy(RetryPolicyProperties properties) {
         properties.validate();
@@ -100,14 +101,14 @@ public class VeloxEmailAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
+    @ConditionalOnProperty(prefix = EmailPropertyPrefixes.EMAIL, name = "enabled", havingValue = "true")
     @ConditionalOnMissingBean
     public EmailExceptionTranslator emailExceptionTranslator() {
         return new DefaultEmailExceptionTranslator();
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
+    @ConditionalOnProperty(prefix = EmailPropertyPrefixes.EMAIL, name = "enabled", havingValue = "true")
     @ConditionalOnMissingBean
     @ConditionalOnBean(EmailChannel.class)
     public IEmailSender emailSender(EmailChannel channel,
@@ -124,14 +125,14 @@ public class VeloxEmailAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "false", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = EmailPropertyPrefixes.EMAIL, name = "enabled", havingValue = "false", matchIfMissing = true)
     @ConditionalOnMissingBean(IEmailChannel.class)
     public IEmailChannel disabledEmailChannel(VeloxEmailLogger logger) {
         return new NoOpEmailChannel(logger);
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "false", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = EmailPropertyPrefixes.EMAIL, name = "enabled", havingValue = "false", matchIfMissing = true)
     @ConditionalOnMissingBean(IEmailSender.class)
     public IEmailSender disabledEmailSender(VeloxEmailLogger logger) {
         return new DisabledEmailSender(logger);
@@ -164,7 +165,7 @@ public class VeloxEmailAutoConfiguration {
     static class SmtpSupportConfiguration {
 
         @Bean
-        @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
+        @ConditionalOnProperty(prefix = EmailPropertyPrefixes.EMAIL, name = "enabled", havingValue = "true")
         @ConditionalOnMissingBean(name = "veloxEmailJavaMailSender", value = {EmailChannel.class, EmailSender.class})
         public JavaMailSender veloxEmailJavaMailSender(VeloxEmailProperties properties) {
             properties.validateForSmtp();
@@ -190,7 +191,7 @@ public class VeloxEmailAutoConfiguration {
         }
 
         @Bean
-        @ConditionalOnProperty(prefix = "velox.email", name = "enabled", havingValue = "true")
+        @ConditionalOnProperty(prefix = EmailPropertyPrefixes.EMAIL, name = "enabled", havingValue = "true")
         @ConditionalOnMissingBean
         @ConditionalOnBean(name = "veloxEmailJavaMailSender")
         public IEmailChannel emailChannel(@Qualifier("veloxEmailJavaMailSender") JavaMailSender mailSender) {

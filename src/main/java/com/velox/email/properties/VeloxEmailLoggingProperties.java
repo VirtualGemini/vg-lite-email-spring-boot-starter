@@ -1,9 +1,10 @@
 package com.velox.email.properties;
 
+import com.velox.email.common.prefix.EmailPropertyPrefixes;
 import com.velox.email.support.type.LogLevelType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "velox.email.logging")
+@ConfigurationProperties(prefix = EmailPropertyPrefixes.EMAIL_LOGGING)
 public class VeloxEmailLoggingProperties {
 
     private boolean enabled = true;

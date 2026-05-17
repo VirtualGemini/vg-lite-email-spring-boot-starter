@@ -1,11 +1,12 @@
 package com.velox.email.properties;
 
+import com.velox.email.common.prefix.EmailPropertyPrefixes;
 import com.velox.email.common.message.EmailCommonMessages;
 import com.velox.email.support.type.ProtocolType;
 import com.velox.email.exception.EmailConfigException;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "velox.email")
+@ConfigurationProperties(prefix = EmailPropertyPrefixes.EMAIL)
 public class VeloxEmailProperties {
 
     private boolean enabled = false;

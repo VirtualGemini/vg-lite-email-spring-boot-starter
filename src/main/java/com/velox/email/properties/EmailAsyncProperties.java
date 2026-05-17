@@ -1,10 +1,11 @@
 package com.velox.email.properties;
 
+import com.velox.email.common.prefix.EmailPropertyPrefixes;
 import com.velox.email.common.message.EmailCommonMessages;
 import com.velox.email.exception.EmailConfigException;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "velox.email.async")
+@ConfigurationProperties(prefix = EmailPropertyPrefixes.EMAIL_ASYNC)
 public class EmailAsyncProperties {
 
     private static final String DEFAULT_THREAD_NAME_PREFIX = "velox-email-";

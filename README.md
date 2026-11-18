@@ -1,226 +1,216 @@
-# VG Lite Email Spring Boot Starter
+<h2 align="center" id="top">VG Lite Email Spring Boot Starter</h2>
+<p>A lightweight, robust, and developer-friendly email solution built on Spring Boot. It provides an easy-to-use API for sending both synchronous and asynchronous emails with retry mechanisms, while integrating seamlessly into Spring Boot applications, your code reads like poetry.</p>
+<div align="center">English | <a href="./README.zh-CN.md">简体中文</a></div>
 
-English | [简体中文](./README.zh-CN.md)
+<br />
+<div align="center">
 
-A standalone email starter for Spring Boot, with fluent message composition, synchronous and asynchronous delivery, bounded executors, retry with backoff, and replaceable sending contracts.
+[![license](https://img.shields.io/badge/license-Apache%202.0-green.svg)](./LICENSE) [![github stars](https://img.shields.io/github/stars/VirtualGemini/vg-lite-email-spring-boot-starter)](https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/stargazers) [![github forks](https://img.shields.io/github/forks/VirtualGemini/vg-lite-email-spring-boot-starter)](https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/network/members)
 
+</div>
+
+## Demo
+Just one line to send an email:
 ```java
-emailBuilder.to("user@example.com")
-        .subject("Welcome")
-        .html("<h1>Hello!</h1>")
-        .retry(3)
-        .async()
-        .send();
+builder.to("email-username@example.com" ).subject("Test").text("Hello, World!").retry(3).async().send();
 ```
-
-`main` contains the new implementation extracted from the Velox email module. The previous implementation and its original commits remain on [`master`](https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/tree/master). See [migration history](./docs/HISTORY.md) for source commits and extraction details.
+```java
+builder                                      // injected EmailBuilder
+        .to("email-username@example.com" )   // set recipient
+        .subject("Test")                     // set subject
+        .text("Hello, World!")               // set content
+        .retry(3)                            // up to 3 total attempts
+        .async()                             // send asynchronously
+        .send();                             // send email
+```
 
 ## Features
 
-- Immutable fluent builders for To, CC, BCC, sender identity, reply address, plain text, and HTML.
-- Attachments and inline resources from files, Spring resources, byte arrays, and streams.
-- Synchronous `SendResponse` and asynchronous `CompletableFuture<SendResponse>` results.
-- Bounded virtual threads or fixed platform thread pools with managed shutdown.
-- Configurable retry attempts, exponential backoff, per-message failure callbacks, interceptors, and listeners.
-- Replaceable sender, channel, retry policy, exception translator, builder factory, and executor.
-- Disabled mode that keeps injectable contracts available without opening an SMTP connection.
-- Spring Boot auto-configuration and generated configuration metadata, without any Velox framework dependency.
+Easy Integration – Simple auto-configuration with Spring Boot.
 
-## Compatibility
+Asynchronous Sending – Send emails asynchronously with a single method call.
 
-| Item | This branch |
-| --- | --- |
-| Java | 21 or later; bytecode targets Java 21 |
-| Spring Boot | Built and tested against 3.4.5 |
-| Mail API | Jakarta Mail |
-| Default transport | SMTP, with SSL or STARTTLS |
-| Development version | `1.0.0-SNAPSHOT` |
+Retry Mechanism – Built-in configurable retry for failed emails.
 
-The new API is a breaking change from `0.1.64`. Java 8/11/17 and Spring Boot 2 applications should continue using the old version until upgraded. Spring Boot 4 compatibility is not claimed by this build.
+Fluent API – Chainable for clean and readable email creation.EmailBuilder
 
-## Quick start
+Customizable Executors – Configure thread pools for async operations.
 
-### 1. Build and install
 
-The development version on `main` is built from source:
+## Quick Start
+### Version & Compatibility
+
+- **Java**: Requires Java 21 or higher. Tested with Java 21 and 25.
+- **Spring Boot**: Uses Spring Boot 3 and Jakarta Mail; built and tested against Spring Boot 3.4.5.
+- **Spring Boot 2 / 4**: The new version does not support Spring Boot 2; Spring Boot 4 has not been verified.
+- **Protocol**: Currently supports **SMTP**. More protocols will be added in future releases.
+
+### Download Jar
+The previous `0.1.64` JAR remains available at the following link:
+
+- https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/releases/tag/v0.1.64
+
+The current `main` development version is `1.0.0-SNAPSHOT`. Build its JAR from source:
 
 ```bash
 git clone --branch main https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter.git
 cd vg-lite-email-spring-boot-starter
-mvn clean install
+mvn clean package
 ```
 
-Add it to a Spring Boot 3 application:
+The old implementation remains on `master`; see [migration history](./docs/HISTORY.md) for the preserved source commits.
 
+### Maven Install
+Run the following command from the project directory to install the JAR and its dependency POM locally. You can also use `mvn clean install` directly.
+
+#### linux shell:
+```bash
+mvn install:install-file \
+  -Dfile=target/vg-lite-email-spring-boot-starter-1.0.0-SNAPSHOT.jar \
+  -DgroupId=io.github.virtualgemini \
+  -DartifactId=vg-lite-email-spring-boot-starter \
+  -Dversion=1.0.0-SNAPSHOT \
+  -Dpackaging=jar \
+  -DpomFile=pom.xml
+```
+#### windows cmd:
+```bash
+mvn install:install-file -Dfile=target/vg-lite-email-spring-boot-starter-1.0.0-SNAPSHOT.jar -DgroupId=io.github.virtualgemini -DartifactId=vg-lite-email-spring-boot-starter -Dversion=1.0.0-SNAPSHOT -Dpackaging=jar -DpomFile=pom.xml
+```
+#### windows powershell:
+```bash
+mvn install:install-file `
+  -Dfile=target/vg-lite-email-spring-boot-starter-1.0.0-SNAPSHOT.jar `
+  -DgroupId=io.github.virtualgemini `
+  -DartifactId=vg-lite-email-spring-boot-starter `
+  -Dversion=1.0.0-SNAPSHOT `
+  -Dpackaging=jar `
+  -DpomFile=pom.xml
+```
+In the above command, `-Dfile` is the path to the built JAR and `-DpomFile` is the project POM, which preserves its dependency declarations.
+
+### Maven Dependency
+Add the following dependency to your `pom.xml`:
 ```xml
+<!-- VG Lite Email -->
 <dependency>
     <groupId>io.github.virtualgemini</groupId>
     <artifactId>vg-lite-email-spring-boot-starter</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
-
-`spring-boot-starter-mail` is included transitively. A separate mail dependency is no longer required. This branch does not imply that a new release has been published to Maven Central or GitHub Releases.
-
-### 2. Configure SMTP
-
-Add to `application.yml`:
-
+`spring-boot-starter-mail` is now included transitively, so it does not need to be declared separately. Please don't forget to reload.
+### Spring Boot Configuration
+Add the following configuration to your `application.yml`:
 ```yaml
 vg:
   lite-email:
-    enabled: true
-    host: smtp.example.com
-    port: 587
-    username: ${SMTP_USERNAME}
-    password: ${SMTP_PASSWORD}
-    from: ${SMTP_USERNAME}
-    from-name: Example App
-    ssl: false
-    starttls: true
-    provider-auto-detect: false
+    enabled: true                        # enable email sending
+    sender: your-email@example.com       # your email address
+    password: your_authorization_code    # your email SMTP password
 ```
+`enabled` defaults to `false`. The existing `sender` property still supplies the username and default sender address; common SMTP providers are inferred from its domain. For other servers, configure both `host` and `port` explicitly.
 
-Use the credentials or authorization token required by your SMTP provider. `from` falls back to `username`. The legacy `sender` property still supplies both values when they are unset.
+Please pay attention to the format and indentation in your `application.yml`; incorrect spacing may prevent proper loading of email settings.
 
-The starter owns its SMTP configuration under `vg.lite-email`; `spring.mail.*` does not configure this sender. It creates a dedicated `liteEmailJavaMailSender`. To supply your own JavaMailSender for the default SMTP channel, register it with that bean name.
-
-With `provider-auto-detect: true` (the default), omitted host/port are inferred from the username domain. Explicitly configuring both host and port is preferable for custom or enterprise servers. The inference table is a built-in convenience and does not verify provider availability.
-
-### 3. Send a message
-
-No `@EnableAsync` or component scan of the starter package is needed.
+### Everything's Ready, We Can Take Off!
+#### Feel free to integrate it into your project and see it in action!
 
 ```java
 import io.github.virtualgemini.vgliteemail.api.builder.EmailBuilder;
-import io.github.virtualgemini.vgliteemail.api.message.SendResponse;
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Service
-public class WelcomeMailService {
-    private final EmailBuilder emailBuilder;
+@RestController
+public class Controller {
+    
+    @Autowired
+    EmailBuilder builder;
 
-    public WelcomeMailService(EmailBuilder emailBuilder) {
-        this.emailBuilder = emailBuilder;
-    }
-
-    public SendResponse sendWelcome(String recipient) {
-        return emailBuilder.to(recipient)
-                .subject("Welcome")
-                .text("Thanks for joining us.")
-                .sendSync();
+    @PostMapping("/send")
+    public void sendEmail(){
+        builder
+                .to("email-username@example.com" )
+                .subject("Test")
+                .text("Hello, World!")
+                .retry(3)
+                .async()
+                .send();
     }
 }
 ```
+The builder is immutable: chain calls or retain their return values. `.retry(3)` allows up to three total attempts, including the first send, and must precede `.async()`. Async `send()` returns a `CompletableFuture<SendResponse>`; check its response or exceptional completion to determine the result. For synchronous sending, use `.sendSync()` and check `response.success()`.
 
-`send()` is also synchronous. Check `response.success()`; a completed SMTP call can return a failed response instead of throwing. Invalid requests and extension/executor errors can throw. Success indicates acceptance by the SMTP server, not delivery to the recipient's inbox.
+#### Don’t know how to get started? Don’t worry, I’ve got you covered!
 
-Every builder method returns a new builder. Chain methods or retain the returned value; ignoring it discards the change. An injected root builder can be reused for independent messages. `EmailBuilderFactory<EmailBuilder>.newMessage()` is available when explicit message creation is useful.
-
-## Async, attachments, and failure handling
-
+- **Step 1**: Start your project, if you are using Spring Boot, you can start it here with one click.
 ```java
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.CompletableFuture;
-import io.github.virtualgemini.vgliteemail.api.message.SendResponse;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-CompletableFuture<SendResponse> result = emailBuilder
-        .to("user@example.com")
-        .cc("copy@example.com")
-        .subject("Report")
-        .text("Your report is attached.")
-        .html("<p>Your report is attached.</p><img src='cid:logo'>")
-        .attachment("report.txt", "Report contents".getBytes(StandardCharsets.UTF_8), "text/plain")
-        .inline("logo", "logo.png", logoBytes, "image/png") // supply your image bytes
-        .retry(3)
-        .onFailure(context -> {
-            // Inspect context.response() and record final delivery failure.
-        })
-        .async()
-        .send();
+@SpringBootApplication
+public class SendMailDemoApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(SendMailDemoApplication.class, args);
+    }
+
+}
 ```
 
-Configure retry and callbacks before `.async()`, which returns an `AsyncEmailDispatch` exposing `send()`. Handle both failed responses and exceptional completion of the future. `onFailure` runs after delivery retries are exhausted; it is not a callback for invalid input or executor rejection.
+- **Step 2**: Add HTTP REQUEST file, you can run it directly.
+```http request
+POST http://localhost:8080/send
+Content-Type: application/json
 
-The stream attachment overloads read and close the stream while composing the message. An `InputStreamSource` should return a fresh stream for each read so that SMTP retries can reread the attachment.
+{}
 
-## Configuration reference
-
-All properties below are under `vg.lite-email`:
-
-| Property | Default | Meaning |
-| --- | --- | --- |
-| `enabled` | `false` | Enables real delivery |
-| `username`, `password` | unset | Credentials required by the default SMTP implementation |
-| `from` | `username` | Default sender address |
-| `from-name`, `reply-to` | unset | Default display name and reply address |
-| `sender` | unset | Alias supplying username/from when absent |
-| `host`, `port` | inferred | SMTP endpoint; set both for an explicit endpoint |
-| `provider-auto-detect` | `true` | Infers endpoint when host/port are not both set |
-| `protocol` | inferred | `SMTP` or `SMTPS` |
-| `ssl`, `starttls` | inferred | SSL and STARTTLS toggles |
-| `auth` | `true` | SMTP authentication toggle; default implementation still requires credentials |
-| `connection-timeout`, `timeout`, `write-timeout` | `5000` | Socket timeouts in milliseconds |
-| `async.enabled` | `true` | Uses a pool; false executes on the calling thread |
-| `async.virtual-threads` | `true` | Virtual threads; false selects a fixed platform pool |
-| `async.concurrency-limit` | `256` | Maximum concurrent virtual tasks / platform pool size |
-| `async.thread-name-prefix` | `vg-lite-email-` | Thread name prefix |
-| `retry.enabled` | `true` | Enables retry policy |
-| `retry.default-attempts` | `1` | Total attempts when the message has no override |
-| `retry.max-attempts` | `3` | Global cap on total attempts |
-| `retry.initial-delay` | `1s` | Delay before the first retry |
-| `retry.multiplier` | `2.0` | Exponential backoff multiplier |
-| `retry.max-delay` | `30s` | Upper bound on retry delay |
-| `logging.enabled` | `true` | Starter logging |
-| `logging.level` | `INFO` | `DEBUG`, `INFO`, `WARN`, `ERROR` |
-
-`.retry(3)` means at most three total attempts, including the first send, subject to the global cap. `.retry()` requests two total attempts. The default SMTP channel retries codes `421`, `450`, `451`, and `452`; permanent or unknown failures are not retried by default. Both the channel and retry policy must allow another attempt.
-
-The bounded virtual executor waits for a permit when the concurrency limit is reached, so submitting an async send may block under load. The platform pool uses a queue. A custom `liteEmailExecutor` bean can supply different admission or queue behavior. Setting `async.enabled: false` runs async requests on the caller and returns a completed future.
-
-When `enabled` is false or absent, the default no-op sender returns `success=false`, `errorCode=-2`, `channel=NOOP`. Credentials, retry infrastructure, and the executor are not required. The switch selects default implementations at application startup; it does not dynamically reconfigure an already running context. User-supplied beans retain their own behavior.
-
-## Extension points
-
-Register implementations as Spring beans; auto-configuration backs off for the corresponding contract.
-
-| Type under `io.github.virtualgemini.vgliteemail` | Purpose |
-| --- | --- |
-| `api.sender.EmailSender` | Replace the entire send pipeline |
-| `spi.channel.EmailChannel` | Replace SMTP and retain the default pipeline |
-| `spi.policy.RetryPolicy` | Retry eligibility and delay |
-| `spi.policy.EmailExceptionTranslator` | Translate exceptions caught by the sender |
-| `spi.hook.EmailSendInterceptor` | Transform requests before and responses after delivery |
-| `spi.hook.EmailSendListener` | Observe final success/failure |
-| `api.builder.EmailBuilderFactory` | Create custom builders |
-| Bean named `liteEmailExecutor` | Customize async execution |
-
-Abstract bases are provided in `spi.builder.AbstractEmailBuilder`, `spi.sender.AbstractEmailSender`, and `spi.channel.AbstractEmailChannel`. The SMTP channel translates its own mail failures before returning a response; replacing the sender's translator does not replace that SMTP translation.
-
-## Upgrading from 0.1.64
-
-| Previous usage | New usage |
-| --- | --- |
-| Java 8+, Spring Boot 2 | Java 21+, Spring Boot 3 |
-| `core.EmailBuilder` | `api.builder.EmailBuilder` |
-| `core.SendRequest` / `core.SendResponse` | `api.message.SendRequest` / `api.message.SendResponse` |
-| Implicitly enabled sending | Set `vg.lite-email.enabled: true` |
-| `.async().retry(3).send()` | `.retry(3).async().send()` |
-| Separate `spring-boot-starter-mail` dependency | Included transitively |
-| Mutable composition | Retain each returned immutable builder |
-
-Maven group/artifact coordinates and the `vg.lite-email` prefix are retained. API package layout, runtime requirements, execution settings, and retry semantics must be reviewed when upgrading. The old READMEs and implementation remain accessible on `master`.
-
-## Development
-
-```bash
-mvn verify
+###
 ```
 
-Tests cover enabled/disabled auto-configuration, custom contracts, immutable composition, SMTP MIME content, attachments, retries, callbacks, and executor lifecycle without contacting a live SMTP server. GitHub Actions runs verification on Java 21 and 25 for `main` pushes and pull requests.
+- **Step 3**: Check the HTTP response and console log. Status code 200 means the request was handled; check the async result separately to confirm SMTP acceptance.
+```http request
+POST http://localhost:8080/send
 
-## License and contributions
+HTTP/1.1 200 
+Content-Length: 0
+Date: Sat, 22 Nov 2025 12:29:35 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
 
-The repository retains its [Apache 2.0 license](./LICENSE). Imported Velox email code retains its [MIT notice](./LICENSE-MIT), also included in the JAR. [Migration history](./docs/HISTORY.md) records provenance.
+<Response body is empty>
 
-Issues and pull requests are welcome. Include a reproducible example and relevant test coverage for behavior changes.
+Response code: 200; Time: 87ms (87 ms); Content length: 0 bytes (0 B)
+```
+
+- **Step 4**: Now! you can check your email.
+
+## Contributing
+The repository retains its [Apache 2.0 license](./LICENSE); the imported email module retains its [MIT notice](./LICENSE-MIT).
+
+We sincerely welcome and appreciate the support of every contributor! Whether you have new ideas, feature suggestions, or code optimizations, you can participate in the following ways:
+
+Submit Pull Requests: Share your code and help the project grow.
+
+Create GitHub Issues: Provide bug feedback or new feature suggestions to help us improve together.
+
+Every contribution you make takes this project one step further! Come join our open source community!
+
+## Looking ahead
+we’re planning to add scheduled tasks, batch sending, email templates, message queue integration, and more...
+
+## Conclusion & Thanks
+Core-ready, almost magic: While some features are still polishing and a few may have minor rough edges, the core email sending functionality is solid and fully usable — one line to send, async & retry ready, your emails just fly!
+
+Thank you for checking out **VG Lite Email Spring Boot Starter**! We hope it makes sending emails in your projects effortless and enjoyable.
+
+If you have ideas for improvements, feature requests, or find any bugs, don’t hesitate to open an issue or submit a pull request. Every bit of feedback helps us make this tool even better.
+
+If you like the project, please give it a ⭐ on GitHub — your support keeps us motivated!
+
+Happy coding and smooth emailing! 
+
+<br>
+<div align="center"><a href="#top">Back to Top</a></div>
+<br>

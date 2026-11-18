@@ -1,1 +1,1 @@
-com.velox.email.autoconfigure.VeloxEmailAutoConfiguration
+io.github.virtualgemini.vgliteemail.autoconfigure.LiteEmailAutoConfiguration

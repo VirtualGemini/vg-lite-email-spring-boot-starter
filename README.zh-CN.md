@@ -47,12 +47,8 @@ Spring Boot 2 / 4: 新版不支持 Spring Boot 2，尚未验证 Spring Boot 4。
 
 协议: 当前仅支持 SMTP。更多协议将在未来版本中添加。
 
-### 下载 JAR
-旧版 `0.1.64` 的 JAR 仍可通过以下链接下载:
-
-- https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/releases/tag/v0.1.64
-
-当前 `main` 开发版本为 `1.0.0-SNAPSHOT`，请从源码构建 JAR：
+### 构建 JAR
+当前开发版本为 `1.0.0-SNAPSHOT`，请从源码构建 JAR：
 
 ```bash
 git clone --branch main https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter.git
@@ -60,36 +56,22 @@ cd vg-lite-email-spring-boot-starter
 mvn clean package
 ```
 
-旧实现仍保留在 `master`，保留的来源提交见[迁移历史](./docs/HISTORY.md)。
-
 ### Maven 安裝
-在项目目录执行以下命令，将 JAR 及其依赖 POM 安装到本地；也可以直接执行 `mvn clean install`。
+在项目目录执行以下命令，构建 starter 并安装到本地 Maven 仓库。
 
 #### linux shell:
 ```bash
-mvn install:install-file \
-  -Dfile=target/vg-lite-email-spring-boot-starter-1.0.0-SNAPSHOT.jar \
-  -DgroupId=io.github.virtualgemini \
-  -DartifactId=vg-lite-email-spring-boot-starter \
-  -Dversion=1.0.0-SNAPSHOT \
-  -Dpackaging=jar \
-  -DpomFile=pom.xml
+mvn clean install
 ```
 #### windows cmd:
 ```bash
-mvn install:install-file -Dfile=target/vg-lite-email-spring-boot-starter-1.0.0-SNAPSHOT.jar -DgroupId=io.github.virtualgemini -DartifactId=vg-lite-email-spring-boot-starter -Dversion=1.0.0-SNAPSHOT -Dpackaging=jar -DpomFile=pom.xml
+mvn clean install
 ```
 #### windows powershell:
 ```bash
-mvn install:install-file `
-  -Dfile=target/vg-lite-email-spring-boot-starter-1.0.0-SNAPSHOT.jar `
-  -DgroupId=io.github.virtualgemini `
-  -DartifactId=vg-lite-email-spring-boot-starter `
-  -Dversion=1.0.0-SNAPSHOT `
-  -Dpackaging=jar `
-  -DpomFile=pom.xml
+mvn clean install
 ```
-上述命令中，`-Dfile` 指向构建出的 JAR，`-DpomFile` 指向项目 POM，用于保留依赖声明。
+该命令会同时安装 JAR、项目 POM 及其依赖声明。
 
 ### Maven 依賴
 在你的 `pom.xml` 文件中添加以下依赖：
@@ -108,11 +90,17 @@ mvn install:install-file `
 ```yaml
 vg:
   lite-email:
-    enabled: true                        # 启用邮件发送
-    sender: your-email@example.com       # your email address
-    password: your_authorization_code    # your email SMTP password
+    enabled: true                       # 启用邮件发送
+    host: smtp.example.com              # SMTP 服务器
+    port: 587                           # STARTTLS 端口
+    username: ${SMTP_USERNAME}           # SMTP 用户名
+    password: ${SMTP_PASSWORD}           # SMTP 密码或授权码
+    from: ${SMTP_USERNAME}               # 发件地址
+    ssl: false
+    starttls: true
+    provider-auto-detect: false
 ```
-`enabled` 默认为 `false`。旧的 `sender` 配置仍用于补充用户名和默认发件地址，常见邮箱的 SMTP 服务器会按其域名推断；其他服务器请同时显式配置 `host` 和 `port`。
+设置环境变量 `SMTP_USERNAME`、`SMTP_PASSWORD`，并按邮箱服务商要求替换 SMTP 地址及端口。`enabled` 默认为 `false`，未设置 `from` 时使用 `username`。
 
 请注意 `application.yml` 文件的格式和缩进；不正确的空白可能会防止电子邮件设置的正确加载。
 
@@ -121,9 +109,12 @@ vg:
 
 ```java
 import io.github.virtualgemini.vgliteemail.api.builder.EmailBuilder;
+import io.github.virtualgemini.vgliteemail.api.message.SendResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 public class Controller {
@@ -132,8 +123,8 @@ public class Controller {
     EmailBuilder builder;
 
     @PostMapping("/send")
-    public void sendEmail(){
-        builder
+    public CompletableFuture<SendResponse> sendEmail(){
+        return builder
                 .to("email-username@example.com" )
                 .subject("Test")
                 .text("Hello, World!")
@@ -172,19 +163,21 @@ Content-Type: application/json
 ###
 ```
 
-- **第三步**: 检查 HTTP 响应及控制台日志。状态码 200 表示请求已处理，是否被 SMTP 接受还需要检查异步结果。
+- **第三步**: 检查响应。上面的 Controller 会在 HTTP 响应中返回异步发送结果，`success: true` 表示 SMTP 服务器已接受邮件。成功响应示例如下：
 ```http request
 POST http://localhost:8080/send
 
-HTTP/1.1 200 
-Content-Length: 0
-Date: Sat, 22 Nov 2025 12:29:35 GMT
-Keep-Alive: timeout=60
-Connection: keep-alive
+HTTP/1.1 200
+Content-Type: application/json
 
-<Response body is empty>
-
-Response code: 200; Time: 87ms (87 ms); Content length: 0 bytes (0 B)
+{
+  "success": true,
+  "msgId": "<message-id@example.com>",
+  "error": null,
+  "errorCode": 0,
+  "attempts": 1,
+  "channel": "SMTP"
+}
 ```
 
 - **第四步**: 现在！你可以检查你的邮件。

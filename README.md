@@ -32,7 +32,7 @@ Asynchronous Sending – Send emails asynchronously with a single method call.
 
 Retry Mechanism – Built-in configurable retry for failed emails.
 
-Fluent API – Chainable for clean and readable email creation.EmailBuilder
+Fluent API – Chainable for clean and readable email creation.
 
 Customizable Executors – Configure thread pools for async operations.
 
@@ -45,12 +45,8 @@ Customizable Executors – Configure thread pools for async operations.
 - **Spring Boot 2 / 4**: The new version does not support Spring Boot 2; Spring Boot 4 has not been verified.
 - **Protocol**: Currently supports **SMTP**. More protocols will be added in future releases.
 
-### Download Jar
-The previous `0.1.64` JAR remains available at the following link:
-
-- https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/releases/tag/v0.1.64
-
-The current `main` development version is `1.0.0-SNAPSHOT`. Build its JAR from source:
+### Build Jar
+The current development version is `1.0.0-SNAPSHOT`. Build its JAR from source:
 
 ```bash
 git clone --branch main https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter.git
@@ -58,36 +54,22 @@ cd vg-lite-email-spring-boot-starter
 mvn clean package
 ```
 
-The old implementation remains on `master`; see [migration history](./docs/HISTORY.md) for the preserved source commits.
-
 ### Maven Install
-Run the following command from the project directory to install the JAR and its dependency POM locally. You can also use `mvn clean install` directly.
+Run the following command from the project directory to build and install the starter into your local Maven repository.
 
 #### linux shell:
 ```bash
-mvn install:install-file \
-  -Dfile=target/vg-lite-email-spring-boot-starter-1.0.0-SNAPSHOT.jar \
-  -DgroupId=io.github.virtualgemini \
-  -DartifactId=vg-lite-email-spring-boot-starter \
-  -Dversion=1.0.0-SNAPSHOT \
-  -Dpackaging=jar \
-  -DpomFile=pom.xml
+mvn clean install
 ```
 #### windows cmd:
 ```bash
-mvn install:install-file -Dfile=target/vg-lite-email-spring-boot-starter-1.0.0-SNAPSHOT.jar -DgroupId=io.github.virtualgemini -DartifactId=vg-lite-email-spring-boot-starter -Dversion=1.0.0-SNAPSHOT -Dpackaging=jar -DpomFile=pom.xml
+mvn clean install
 ```
 #### windows powershell:
 ```bash
-mvn install:install-file `
-  -Dfile=target/vg-lite-email-spring-boot-starter-1.0.0-SNAPSHOT.jar `
-  -DgroupId=io.github.virtualgemini `
-  -DartifactId=vg-lite-email-spring-boot-starter `
-  -Dversion=1.0.0-SNAPSHOT `
-  -Dpackaging=jar `
-  -DpomFile=pom.xml
+mvn clean install
 ```
-In the above command, `-Dfile` is the path to the built JAR and `-DpomFile` is the project POM, which preserves its dependency declarations.
+This installs the JAR together with its POM and dependency declarations.
 
 ### Maven Dependency
 Add the following dependency to your `pom.xml`:
@@ -105,11 +87,17 @@ Add the following configuration to your `application.yml`:
 ```yaml
 vg:
   lite-email:
-    enabled: true                        # enable email sending
-    sender: your-email@example.com       # your email address
-    password: your_authorization_code    # your email SMTP password
+    enabled: true                       # enable email sending
+    host: smtp.example.com              # SMTP server
+    port: 587                           # STARTTLS port
+    username: ${SMTP_USERNAME}           # SMTP username
+    password: ${SMTP_PASSWORD}           # SMTP password or authorization code
+    from: ${SMTP_USERNAME}               # sender address
+    ssl: false
+    starttls: true
+    provider-auto-detect: false
 ```
-`enabled` defaults to `false`. The existing `sender` property still supplies the username and default sender address; common SMTP providers are inferred from its domain. For other servers, configure both `host` and `port` explicitly.
+Set the environment variables `SMTP_USERNAME` and `SMTP_PASSWORD`, and replace the SMTP endpoint with your provider's settings. `enabled` defaults to `false`; `from` falls back to `username` when omitted.
 
 Please pay attention to the format and indentation in your `application.yml`; incorrect spacing may prevent proper loading of email settings.
 
@@ -118,9 +106,12 @@ Please pay attention to the format and indentation in your `application.yml`; in
 
 ```java
 import io.github.virtualgemini.vgliteemail.api.builder.EmailBuilder;
+import io.github.virtualgemini.vgliteemail.api.message.SendResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 public class Controller {
@@ -129,8 +120,8 @@ public class Controller {
     EmailBuilder builder;
 
     @PostMapping("/send")
-    public void sendEmail(){
-        builder
+    public CompletableFuture<SendResponse> sendEmail(){
+        return builder
                 .to("email-username@example.com" )
                 .subject("Test")
                 .text("Hello, World!")
@@ -169,19 +160,21 @@ Content-Type: application/json
 ###
 ```
 
-- **Step 3**: Check the HTTP response and console log. Status code 200 means the request was handled; check the async result separately to confirm SMTP acceptance.
+- **Step 3**: Check the response. With the controller above, the HTTP response includes the async send result; `success: true` means the SMTP server accepted the message. A successful response looks like:
 ```http request
 POST http://localhost:8080/send
 
-HTTP/1.1 200 
-Content-Length: 0
-Date: Sat, 22 Nov 2025 12:29:35 GMT
-Keep-Alive: timeout=60
-Connection: keep-alive
+HTTP/1.1 200
+Content-Type: application/json
 
-<Response body is empty>
-
-Response code: 200; Time: 87ms (87 ms); Content length: 0 bytes (0 B)
+{
+  "success": true,
+  "msgId": "<message-id@example.com>",
+  "error": null,
+  "errorCode": 0,
+  "attempts": 1,
+  "channel": "SMTP"
+}
 ```
 
 - **Step 4**: Now! you can check your email.

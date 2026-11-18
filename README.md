@@ -172,7 +172,7 @@ All properties below are under `vg.lite-email`:
 | `retry.multiplier` | `2.0` | Exponential backoff multiplier |
 | `retry.max-delay` | `30s` | Upper bound on retry delay |
 | `logging.enabled` | `true` | Starter logging |
-| `logging.level` | `INFO` | `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR` |
+| `logging.level` | `INFO` | `DEBUG`, `INFO`, `WARN`, `ERROR` |
 
 `.retry(3)` means at most three total attempts, including the first send, subject to the global cap. `.retry()` requests two total attempts. The default SMTP channel retries codes `421`, `450`, `451`, and `452`; permanent or unknown failures are not retried by default. Both the channel and retry policy must allow another attempt.
 

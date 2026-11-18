@@ -172,7 +172,7 @@ CompletableFuture<SendResponse> result = emailBuilder
 | `retry.multiplier` | `2.0` | 指数退避倍率 |
 | `retry.max-delay` | `30s` | 重试等待上限 |
 | `logging.enabled` | `true` | 启用 starter 日志 |
-| `logging.level` | `INFO` | `TRACE`、`DEBUG`、`INFO`、`WARN`、`ERROR` |
+| `logging.level` | `INFO` | `DEBUG`、`INFO`、`WARN`、`ERROR` |
 
 `.retry(3)` 表示最多尝试三次，包含首次发送，并受全局上限约束；`.retry()` 请求总共两次尝试。默认 SMTP channel 仅重试 `421`、`450`、`451`、`452`，永久错误和未知错误默认不重试。channel 与 retry policy 必须同时允许，才会继续尝试。
 

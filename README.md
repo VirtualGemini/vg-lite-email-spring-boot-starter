@@ -1,194 +1,178 @@
-<h2 align="center" id="top">VG Lite Email Spring Boot Starter</h2>
-<p>A lightweight, robust, and developer-friendly email solution built on Spring Boot. It provides an easy-to-use API for sending both synchronous and asynchronous emails with retry mechanisms, while integrating seamlessly into Spring Boot applications, your code reads like poetry.</p>
+<h2 align="center" id="top">Velox Email Spring Boot Starter</h2>
+<p align="center">A standalone, hot-pluggable email starter focused on fluent sending, async execution, retry control, and extensible delivery contracts.</p>
 <div align="center">English | <a href="./README.zh-CN.md">简体中文</a></div>
 
 <br />
-<div align="center">
 
-[![license](https://img.shields.io/badge/license-Apache%202.0-green.svg)](./LICENSE) [![github stars](https://img.shields.io/github/stars/VirtualGemini/vg-lite-email-spring-boot-starter)](https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/stargazers) [![github forks](https://img.shields.io/github/forks/VirtualGemini/vg-lite-email-spring-boot-starter)](https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/network/members)
+## Overview
 
-</div>
+`velox-email-spring-boot-starter` is an independent email module for Spring Boot applications.
+It is designed to be usable out of the box, while still allowing full replacement of sending contracts, channel implementations, retry strategies, and execution behavior.
 
-## Demo
-Just one line to send an email:
+This starter focuses on five core capabilities:
+
+- fluent chained email composition
+- async execution with configurable thread pools
+- built-in retry strategy with backoff support
+- interface-first extensibility
+- abstract-class-based override points
+
+## Core Features
+
+### 1. Fluent Chained Sending
+
+The module exposes `EmailBuilder` for builder-style email composition.
+Recipients, subject, text, HTML, attachments, inline resources, retry hints, and failure callbacks can all be declared in one chain.
+
+Example:
+
 ```java
-builder.to("email-username@example.com" ).subject("Test").text("Hello, World!").async().retry(3).send();
-```
-```java
-builder                                      // new EmailBuilder()
-        .to("email-username@example.com" )   // set recipient
-        .subject("Test")                     // set subject
-        .text("Hello, World!")               // set content
-        .async()                             // send asynchronously
-        .retry(3)                            // retry 3 if failed
-        .send();                             // send email
+emailBuilder
+        .to("example@velox.com")
+        .subject("Test")
+        .text("Hello, World!")
+        .send();
 ```
 
-## Features
+### 2. Async Thread Pool Execution
 
-Easy Integration – Simple auto-configuration with Spring Boot.
+The starter includes a built-in executor named `veloxEmailExecutor`.
+It supports:
 
-Asynchronous Sending – Send emails asynchronously with a single method call.
+- synchronous fallback execution
+- virtual threads
+- fixed platform thread pools
+- configurable concurrency limits
+- custom thread name prefixes
 
-Retry Mechanism – Built-in configurable retry for failed emails.
+Example configuration:
 
-Fluent API – Chainable for clean and readable email creation.EmailBuilder
+```yaml
+velox:
+  email:
+    async:
+      enabled: true
+      virtual-threads: true
+      concurrency-limit: 256
+      thread-name-prefix: velox-email-
+```
 
-Customizable Executors – Configure thread pools for async operations.
+### 3. Retry Mechanism
 
+The starter includes a default retry policy implementation.
+It supports:
+
+- default attempts
+- maximum attempts
+- initial delay
+- multiplier-based backoff
+- maximum retry delay
+
+Example configuration:
+
+```yaml
+velox:
+  email:
+    retry:
+      enabled: true
+      default-attempts: 1
+      max-attempts: 3
+      initial-delay: 1s
+      multiplier: 2.0
+      max-delay: 30s
+```
+
+### 4. Interface-First Extensibility
+
+If you want to replace only one part of the pipeline, you can implement interfaces directly.
+
+Typical extension points include:
+
+- `IEmailSender`
+- `IEmailChannel`
+- `EmailExceptionTranslator`
+- `EmailSendInterceptor`
+- `EmailSendListener`
+- `RetryPolicy`
+
+This makes the module suitable for SMTP replacement, provider adaptation, custom auditing, and business-specific retry decisions.
+
+### 5. Abstract Classes for Override-Based Reuse
+
+If direct implementation is too low-level, the starter also provides reusable abstract bases.
+
+Available override skeletons include:
+
+- `AbstractEmailBuilder`
+- `AbstractEmailSender`
+- `AbstractEmailChannel`
+
+These are intended for developers who want to preserve part of the default pipeline while overriding selected behavior.
+
+## Hot-Pluggable Design
+
+This module is intentionally isolated and can be plugged in or removed independently.
+
+- It does not depend on `infra` or `system`.
+- It is activated through Spring Boot auto-configuration.
+- It can be enabled or disabled with `velox.email.enabled`.
+- Its default sender, channel, retry policy, exception translator, and executor can all be replaced.
+
+This makes it suitable both as a default starter and as a contract shell for custom email infrastructure.
 
 ## Quick Start
-### Version & Compatibility
 
-- **Java**: Supports Java 8, 11, and 17.
-- **Spring Boot**: Requires Spring Boot 2.6 or higher. Very old versions may cause issues.
-- **Spring 3+**: Not supported yet. This is not your fault—we are working on it and will update soon.
-- **Protocol**: Currently supports **SMTP**. More protocols will be added in future releases.
+Basic configuration:
 
-### Download Jar
-You can download the jar file from the following link:
-- https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/releases/tag/v0.1.64
-### Maven Install
-#### linux shell:
-```bash
-mvn install:install-file \
-  -Dfile=vg-lite-email-spring-boot-starter-0.1.64.jar \
-  -DgroupId=io.github.virtualgemini \
-  -DartifactId=vg-lite-email-spring-boot-starter \
-  -Dversion=0.1.64 \
-  -Dpackaging=jar
-```
-#### windows cmd:
-```bash
-mvn install:install-file -Dfile=vg-lite-email-spring-boot-starter-0.1.64.jar -DgroupId=io.github.virtualgemini -DartifactId=vg-lite-email-spring-boot-starter -Dversion=0.1.64 -Dpackaging=jar
-```
-#### windows powershell:
-```bash
-mvn install:install-file `
-  -Dfile=vg-lite-email-spring-boot-starter-0.1.64.jar `
-  -DgroupId=io.github.virtualgemini `
-  -DartifactId=vg-lite-email-spring-boot-starter `
-  -Dversion=0.1.64 `
-  -Dpackaging=jar
-```
-It should be noted that in the above command, the `-Dfile` parameter needs to be replaced with the path to the jar file you downloaded.
-
-### Maven Dependency
-Add the following dependency to your `pom.xml`:
-```xml
-<!-- VG Lite Email -->
-<dependency>
-    <groupId>io.github.virtualgemini</groupId>
-    <artifactId>vg-lite-email-spring-boot-starter</artifactId>
-    <version>0.1.64</version>
-</dependency>
-<!-- Spring Boot Email -->
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-mail</artifactId>
-</dependency>
-```
-Please don't forget to reload.
-### Spring Boot Configuration
-Add the following dependency to your `application.yml`:
 ```yaml
-vg:
-  lite-email:
-    sender: your-email@example.com       # your email address
-    password: your_authorization_code    # your email SMTP password
+velox:
+  email:
+    enabled: true
+    username: example@velox.com
+    password: your-password-or-token
+    from: example@velox.com
 ```
-Please pay attention to the format and indentation in your `application.yml`; incorrect spacing may prevent proper loading of email settings.
 
-### Everything's Ready, We Can Take Off!
-#### Feel free to integrate it into your project and see it in action!
+HTML async example:
 
 ```java
-import io.github.virtualgemini.vgliteemail.core.EmailBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-@RestController
-public class Controller {
-    
-    @Autowired
-    EmailBuilder builder;
-
-    @PostMapping("/send")
-    public void sendEmail(){
-        builder
-                .to("email-username@example.com" )
-                .subject("Test")
-                .text("Hello, World!")
-                .async()
-                .retry(3)
-                .send();
-    }
-}
+emailBuilder
+        .to("example@velox.com")
+        .subject("Welcome")
+        .html("<h1>Welcome to Velox</h1>")
+        .sendSync(); // or .async().send();
 ```
-#### Don’t know how to get started? Don’t worry, I’ve got you covered!
-- **Step 1**: Start your project, if you are using Spring Boot, you can start it here with one click.
+
+Attachment and failure hook example:
+
 ```java
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-@SpringBootApplication
-public class SendMailDemoApplication {
-
-    public static void main(String[] args) {
-        SpringApplication.run(SendMailDemoApplication.class, args);
-    }
-
-}
+emailBuilder
+        .to("example@velox.com")
+        .subject("Report")
+        .text("Please check the attachment")
+        .attachment(file)
+        .onFailure(context -> {
+            // custom failure handling
+        })
+        .sendSync();
 ```
-- **Step 2**: Add HTTP REQUEST file, you can run it directly.
-```http request
-POST http://localhost:8080/send
-Content-Type: application/json
 
-{}
+## Auto-Configuration Entry
 
-###
-```
-- **Step 3**: You can see the console log, status code 200 is OK.
-```http request
-POST http://localhost:8080/send
+- `com.velox.email.autoconfigure.VeloxEmailAutoConfiguration`
 
-HTTP/1.1 200 
-Content-Length: 0
-Date: Sat, 22 Nov 2025 12:29:35 GMT
-Keep-Alive: timeout=60
-Connection: keep-alive
+## Primary Public Types
 
-<Response body is empty>
+- `com.velox.email.api.builder.EmailBuilder`
+- `com.velox.email.api.builder.EmailBuilderFactory`
+- `com.velox.email.api.sender.IEmailSender`
+- `com.velox.email.api.channel.IEmailChannel`
 
-Response code: 200; Time: 87ms (87 ms); Content length: 0 bytes (0 B)
-```
-- **Step 4**: Now! you can check your email.
+## Positioning
 
-## Contributing
-We sincerely welcome and appreciate the support of every contributor! Whether you have new ideas, feature suggestions, or code optimizations, you can participate in the following ways:
+This starter is intended for:
 
-Submit Pull Requests: Share your code and help the project grow.
-
-Create GitHub Issues: Provide bug feedback or new feature suggestions to help us improve together.
-
-Every contribution you make takes this project one step further! Come join our open source community!
-
-## Looking ahead
-we’re planning to add scheduled tasks, batch sending, email templates, message queue integration, and more...
-
-## Conclusion & Thanks
-Core-ready, almost magic: While some features are still polishing and a few may have minor rough edges, the core email sending functionality is solid and fully usable — one line to send, async & retry ready, your emails just fly!
-
-Thank you for checking out **VG Lite Email Spring Boot Starter**! We hope it makes sending emails in your projects effortless and enjoyable.
-
-If you have ideas for improvements, feature requests, or find any bugs, don’t hesitate to open an issue or submit a pull request. Every bit of feedback helps us make this tool even better.
-
-If you like the project, please give it a ⭐ on GitHub — your support keeps us motivated!
-
-Happy coding and smooth emailing! 
-
-<br>
-<div align="center"><a href="#top">Back to Top</a></div>
-<br>
+- transactional email delivery
+- notification delivery infrastructure
+- SMTP-based integration with replaceable contracts
+- custom mail infrastructure inside Spring Boot systems

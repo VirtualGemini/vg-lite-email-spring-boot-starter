@@ -1,199 +1,178 @@
-<h2 align="center" id="top">VG Lite Email Spring Boot Starter</h2>
-<p>一个轻量级、强大且开发者友好的邮件解决方案，基于 Spring Boot 构建。它提供了一个易于使用的链式 API，用于发送同步和异步邮件，并支持重试机制，可以无缝集成到 Spring Boot 应用程序中，让你的代码如同诗歌。</p>
+<h2 align="center" id="top">Velox Email Spring Boot Starter</h2>
+<p align="center">一个独立、可热插拔的邮件 starter，重点提供链式发送、异步执行、重试控制与可扩展的发送契约。</p>
 <div align="center"><a href="./README.md">English</a> | 简体中文</div>
 
 <br />
-<div align="center">
 
-[![license](https://img.shields.io/badge/license-Apache%202.0-green.svg)](./LICENSE) [![github stars](https://img.shields.io/github/stars/VirtualGemini/vg-lite-email-spring-boot-starter)](https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/stargazers) [![github forks](https://img.shields.io/github/forks/VirtualGemini/vg-lite-email-spring-boot-starter)](https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/network/members)
+## 模块概述
 
-</div>
+`velox-email-spring-boot-starter` 是一个面向 Spring Boot 应用的独立邮件模块。
+它既可以开箱即用，也允许你完整替换发送契约、渠道实现、重试策略和执行方式。
 
-## 演示
-只需要一行代码来发送邮件:
+这个 starter 的核心能力集中在五点：
+
+- 链式调用式邮件构建
+- 可配置线程池的异步执行
+- 内建重试与退避机制
+- 接口优先的扩展方式
+- 基于抽象类的重写式复用
+
+## 核心特性
+
+### 1. 链式调用发送
+
+模块对外提供 `EmailBuilder`，支持 builder 风格构建邮件。
+收件人、主题、文本、HTML、附件、内联资源、重试提示和失败回调都可以在一次链式调用中声明完成。
+
+示例：
+
 ```java
-builder.to("email-username@example.com" ).subject("Test").text("Hello, World!").async().retry(3).send();
-```
-```java
-builder                                      // new EmailBuilder()
-        .to("email-username@example.com" )   // set recipient
-        .subject("Test")                     // set subject
-        .text("Hello, World!")               // set content
-        .async()                             // send asynchronously
-        .retry(3)                            // retry 3 if failed
-        .send();                             // send email
+emailBuilder
+        .to("example@velox.com")
+        .subject("Test")
+        .text("Hello, World!")
+        .send();
 ```
 
-## 特性
+### 2. 异步线程池执行
 
-简单集成 – 与 Spring Boot 无缝自动配置。
+starter 内置一个名为 `veloxEmailExecutor` 的执行器。
+支持能力包括：
 
-异步发送 – 通过一个方法调用异步发送邮件。
+- 同步兜底执行
+- 虚拟线程
+- 固定大小平台线程池
+- 可配置并发上限
+- 自定义线程名前缀
 
-重试机制 – 为失败的邮件内置可配置的重试机制。
+示例配置：
 
-流畅的 API – 支持链式调用，生成简洁可读的邮件。
+```yaml
+velox:
+  email:
+    async:
+      enabled: true
+      virtual-threads: true
+      concurrency-limit: 256
+      thread-name-prefix: velox-email-
+```
 
-可定制的执行器 – 配置异步操作的线程池。
+### 3. 重试机制
 
+starter 内置默认重试策略实现。
+支持能力包括：
+
+- 默认尝试次数
+- 最大尝试次数
+- 初始延迟
+- 基于倍率的退避
+- 最大重试延迟
+
+示例配置：
+
+```yaml
+velox:
+  email:
+    retry:
+      enabled: true
+      default-attempts: 1
+      max-attempts: 3
+      initial-delay: 1s
+      multiplier: 2.0
+      max-delay: 30s
+```
+
+### 4. 接口可实现
+
+如果你只想替换发送链路中的某一部分，可以直接实现接口。
+
+常见扩展点包括：
+
+- `IEmailSender`
+- `IEmailChannel`
+- `EmailExceptionTranslator`
+- `EmailSendInterceptor`
+- `EmailSendListener`
+- `RetryPolicy`
+
+这使得该模块适合做 SMTP 替换、服务商适配、自定义审计以及业务级重试决策。
+
+### 5. 抽象类可重写
+
+如果直接实现接口过于底层，starter 也提供了可复用的抽象骨架。
+
+可继承的基础类包括：
+
+- `AbstractEmailBuilder`
+- `AbstractEmailSender`
+- `AbstractEmailChannel`
+
+它们适合希望保留默认发送流程一部分、只重写选定行为的开发者。
+
+## 独立可热插拔
+
+这个模块从设计上就是隔离的，可以独立接入、独立移除。
+
+- 不依赖 `infra` 和 `system`
+- 通过 Spring Boot 自动装配启用
+- 可通过 `velox.email.enabled` 开关控制
+- 默认 sender、channel、retry policy、exception translator、executor 都可以替换
+
+因此它既可以作为默认邮件 starter 使用，也可以作为你自定义邮件基础设施的契约壳存在。
 
 ## 快速开始
-### 版本与兼容性
-Java: 支持 Java 8、11 和 17。
 
-Spring Boot: 需要 Spring Boot 2.6 或更高版本。非常老的版本可能会有问题。
+基础配置：
 
-Spring 3+: 暂不支持。我们正在努力开发，并将很快更新。
-
-协议: 当前仅支持 SMTP。更多协议将在未来版本中添加。
-
-### 下载 JAR
-你可以通过以下链接下载 JAR 文件:
-- https://github.com/VirtualGemini/vg-lite-email-spring-boot-starter/releases/tag/v0.1.64
-### Maven 安裝
-#### linux shell:
-```bash
-mvn install:install-file \
-  -Dfile=vg-lite-email-spring-boot-starter-0.1.64.jar \
-  -DgroupId=io.github.virtualgemini \
-  -DartifactId=vg-lite-email-spring-boot-starter \
-  -Dversion=0.1.64 \
-  -Dpackaging=jar
-```
-#### windows cmd:
-```bash
-mvn install:install-file -Dfile=vg-lite-email-spring-boot-starter-0.1.64.jar -DgroupId=io.github.virtualgemini -DartifactId=vg-lite-email-spring-boot-starter -Dversion=0.1.64 -Dpackaging=jar
-```
-#### windows powershell:
-```bash
-mvn install:install-file `
-  -Dfile=vg-lite-email-spring-boot-starter-0.1.64.jar `
-  -DgroupId=io.github.virtualgemini `
-  -DartifactId=vg-lite-email-spring-boot-starter `
-  -Dversion=0.1.64 `
-  -Dpackaging=jar
-```
-注意，在上述命令中，-Dfile 参数需要替换为你下载的 JAR 文件的路径。
-
-### Maven 依賴
-在你的 `pom.xml` 文件中添加以下依赖：
-```xml
-<!-- VG Lite Email -->
-<dependency>
-    <groupId>io.github.virtualgemini</groupId>
-    <artifactId>vg-lite-email-spring-boot-starter</artifactId>
-    <version>0.1.64</version>
-</dependency>
-<!-- Spring Boot Email -->
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-mail</artifactId>
-</dependency>
-```
-别忘了重新加载项目。
-
-### Spring Boot 配置
-在你的 `application.yml` 文件中添加以下配置：
 ```yaml
-vg:
-  lite-email:
-    sender: your-email@example.com       # your email address
-    password: your_authorization_code    # your email SMTP password
+velox:
+  email:
+    enabled: true
+    username: example@velox.com
+    password: your-password-or-token
+    from: example@velox.com
 ```
-请注意 `application.yml` 文件的格式和缩进；不正确的空白可能会防止电子邮件设置的正确加载。
 
-### 一切就绪，我们可以起飞了！
-#### 随意集成到你的项目中并看到效果！
+HTML 异步发送示例：
 
 ```java
-import io.github.virtualgemini.vgliteemail.core.EmailBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-@RestController
-public class Controller {
-    
-    @Autowired
-    EmailBuilder builder;
-
-    @PostMapping("/send")
-    public void sendEmail(){
-        builder
-                .to("email-username@example.com" )
-                .subject("Test")
-                .text("Hello, World!")
-                .async()
-                .retry(3)
-                .send();
-    }
-}
+emailBuilder
+        .to("example@velox.com")
+        .subject("Welcome")
+        .html("<h1>Welcome to Velox</h1>")
+        .sendSync(); // 或者 .async().send();
 ```
-#### 不知道如何开始？别担心，我已经准备好了！
-- **第一步**: 启动你的项目，如果你使用 Spring Boot，可以一键启动。
+
+附件与失败回调示例：
+
 ```java
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-@SpringBootApplication
-public class SendMailDemoApplication {
-
-    public static void main(String[] args) {
-        SpringApplication.run(SendMailDemoApplication.class, args);
-    }
-
-}
+emailBuilder
+        .to("example@velox.com")
+        .subject("Report")
+        .text("Please check the attachment")
+        .attachment(file)
+        .onFailure(context -> {
+            // custom failure handling
+        })
+        .sendSync();
 ```
-- **第二步**: 添加 HTTP 请求文件，可以直接运行。
-```http request
-POST http://localhost:8080/send
-Content-Type: application/json
 
-{}
+## 自动装配入口
 
-###
-```
-- **第三步**: 你可以在控制台看到日志，状态码 200 表示成功。
-```http request
-POST http://localhost:8080/send
+- `com.velox.email.autoconfigure.VeloxEmailAutoConfiguration`
 
-HTTP/1.1 200 
-Content-Length: 0
-Date: Sat, 22 Nov 2025 12:29:35 GMT
-Keep-Alive: timeout=60
-Connection: keep-alive
+## 主要对外类型
 
-<Response body is empty>
+- `com.velox.email.api.builder.EmailBuilder`
+- `com.velox.email.api.builder.EmailBuilderFactory`
+- `com.velox.email.api.sender.IEmailSender`
+- `com.velox.email.api.channel.IEmailChannel`
 
-Response code: 200; Time: 87ms (87 ms); Content length: 0 bytes (0 B)
-```
-- **第四步**: 现在！你可以检查你的邮件。
+## 模块定位
 
-## 贡献
-我们真诚欢迎并感谢每一位贡献者的支持！无论您有新想法、功能建议还是代码优化，都可以通过以下方式参与：
+这个 starter 更适合以下基础设施定位：
 
-提交 Pull Request：分享您的代码，助力项目成长。
-
-创建 GitHub Issue：提出 bug 反馈或新功能建议，让我们一起完善。
-
-您的每一点贡献都让这个项目更进一步！快来加入我们的开源社区吧！
-
-## 展望未来
-
-我们计划添加定时任务、批量发送、邮件模板、消息队列集成等功能......
-
-## 结论与感谢
-
-核心功能就绪，几乎完美：虽然一些功能仍在打磨中，可能还有一些小问题，但核心的邮件发送功能非常稳定且完全可用 —— 一行代码发送邮件，支持异步和重试，你的邮件飞起来了！
-
-感谢你查看 VG Lite Email Spring Boot Starter！我们希望它能让你在项目中发送邮件变得轻松愉快。
-
-如果你有改进建议、功能请求或发现任何 bug，请随时提出问题或提交拉取请求。每一条反馈都帮助我们让这个工具变得更好。
-
-如果你喜欢这个项目，请在 GitHub 上给它一个 ⭐ —— 你的支持是我们的动力！
-
-祝编程愉快，邮件发送顺利！
-
-<br>
-<div align="center"><a href="#top">回到顶部</a></div>
-<br>
+- transactional email 投递
+- notification delivery 基础能力
+- 基于 SMTP 的可替换集成能力
+- Spring Boot 系统中的自定义邮件基础设施

@@ -1,3 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-io.github.virtualgemini.vgliteemail.autoconfigure.LiteEmailAutoConfiguration,\
-io.github.virtualgemini.vgliteemail.component.EmailConfigLogger
